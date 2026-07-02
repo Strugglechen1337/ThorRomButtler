@@ -1,0 +1,157 @@
+package dev.thor.rombutler.data.archive
+
+import com.github.junrar.Archive
+import dev.thor.rombutler.domain.model.ArchiveType
+import org.apache.commons.compress.archivers.sevenz.SevenZFile
+import org.apache.commons.compress.archivers.zip.ZipFile
+import java.io.File
+import java.io.InputStream
+import javax.inject.Inject
+import javax.inject.Singleton
+
+/**
+ * A file entry inside an archive.
+ *
+ * @property path entry path inside the archive (forward slashes).
+ * @property sizeBytes uncompressed size (0 when the format doesn't store it).
+ */
+data class ArchiveEntry(
+    val path: String,
+    val sizeBytes: Long,
+)
+
+/**
+ * Uniform read-only access to archive contents, one implementation per
+ * container format. All methods work WITHOUT extracting the archive:
+ * [listEntries] reads only the archive directory/headers, [readEntryPrefix]
+ * decompresses just the first bytes of a single entry.
+ */
+interface ArchiveEntrySource {
+
+    /** All file entries (directories excluded). */
+    fun listEntries(archiveFile: File): List<ArchiveEntry>
+
+    /**
+     * First [maxBytes] decompressed bytes of the entry at [entryPath],
+     * or `null` when the entry cannot be read.
+     */
+    fun readEntryPrefix(archiveFile: File, entryPath: String, maxBytes: Int): ByteArray?
+}
+
+/** Reads an [InputStream] up to [maxBytes] into a right-sized array. */
+internal fun InputStream.readPrefix(maxBytes: Int): ByteArray {
+    val buffer = ByteArray(maxBytes)
+    var total = 0
+    while (total < maxBytes) {
+        val read = read(buffer, total, maxBytes - total)
+        if (read < 0) break
+        total += read
+    }
+    return if (total == maxBytes) buffer else buffer.copyOf(total)
+}
+
+/**
+ * ZIP via Commons Compress [ZipFile] — true random access through the
+ * central directory, so prefix reads are cheap even in huge archives.
+ */
+@Singleton
+class ZipEntrySource @Inject constructor() : ArchiveEntrySource {
+
+    override fun listEntries(archiveFile: File): List<ArchiveEntry> =
+        ZipFile.builder().setFile(archiveFile).get().use { zip ->
+            buildList {
+                for (entry in zip.entries) {
+                    if (!entry.isDirectory) {
+                        add(ArchiveEntry(path = entry.name, sizeBytes = entry.size.coerceAtLeast(0)))
+                    }
+                }
+            }
+        }
+
+    override fun readEntryPrefix(archiveFile: File, entryPath: String, maxBytes: Int): ByteArray? =
+        ZipFile.builder().setFile(archiveFile).get().use { zip ->
+            val entry = zip.getEntry(entryPath) ?: return null
+            zip.getInputStream(entry).use { it.readPrefix(maxBytes) }
+        }
+}
+
+/**
+ * 7z via Commons Compress [SevenZFile]. Solid blocks may force decompression
+ * of preceding entries when seeking — acceptable because only small prefixes
+ * are read and only for ambiguous extensions.
+ */
+@Singleton
+class SevenZEntrySource @Inject constructor() : ArchiveEntrySource {
+
+    override fun listEntries(archiveFile: File): List<ArchiveEntry> =
+        SevenZFile.builder().setFile(archiveFile).get().use { sevenZ ->
+            sevenZ.entries
+                .filter { !it.isDirectory }
+                .map { ArchiveEntry(path = it.name, sizeBytes = it.size) }
+        }
+
+    override fun readEntryPrefix(archiveFile: File, entryPath: String, maxBytes: Int): ByteArray? =
+        SevenZFile.builder().setFile(archiveFile).get().use { sevenZ ->
+            var entry = sevenZ.nextEntry
+            while (entry != null) {
+                if (!entry.isDirectory && entry.name == entryPath) {
+                    val buffer = ByteArray(minOf(maxBytes.toLong(), entry.size).toInt())
+                    var total = 0
+                    while (total < buffer.size) {
+                        val read = sevenZ.read(buffer, total, buffer.size - total)
+                        if (read < 0) break
+                        total += read
+                    }
+                    return if (total == buffer.size) buffer else buffer.copyOf(total)
+                }
+                entry = sevenZ.nextEntry
+            }
+            null
+        }
+}
+
+/**
+ * RAR4 via junrar. RAR5 is rejected earlier by the scanner ([ArchiveType]),
+ * junrar would throw an UnsupportedRarV5Exception anyway.
+ */
+@Singleton
+class RarEntrySource @Inject constructor() : ArchiveEntrySource {
+
+    override fun listEntries(archiveFile: File): List<ArchiveEntry> =
+        Archive(archiveFile).use { rar ->
+            rar.fileHeaders
+                .filter { !it.isDirectory }
+                .map { header ->
+                    ArchiveEntry(
+                        path = header.fileName.replace('\\', '/'),
+                        sizeBytes = header.fullUnpackSize,
+                    )
+                }
+        }
+
+    override fun readEntryPrefix(archiveFile: File, entryPath: String, maxBytes: Int): ByteArray? =
+        Archive(archiveFile).use { rar ->
+            val header = rar.fileHeaders.firstOrNull {
+                !it.isDirectory && it.fileName.replace('\\', '/') == entryPath
+            } ?: return null
+            rar.getInputStream(header).use { it.readPrefix(maxBytes) }
+        }
+}
+
+/**
+ * Picks the matching [ArchiveEntrySource] for a container format.
+ */
+@Singleton
+class ArchiveEntrySourceFactory @Inject constructor(
+    private val zip: ZipEntrySource,
+    private val sevenZ: SevenZEntrySource,
+    private val rar: RarEntrySource,
+) {
+    /** @throws IllegalArgumentException for unsupported formats (RAR5). */
+    fun forType(type: ArchiveType): ArchiveEntrySource = when (type) {
+        ArchiveType.ZIP -> zip
+        ArchiveType.SEVEN_ZIP -> sevenZ
+        ArchiveType.RAR4 -> rar
+        ArchiveType.RAR5 -> throw IllegalArgumentException("RAR5 wird nicht unterstützt")
+    }
+}

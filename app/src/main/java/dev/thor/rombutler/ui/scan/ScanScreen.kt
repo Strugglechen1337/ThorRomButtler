@@ -23,6 +23,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -40,8 +41,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.thor.rombutler.R
+import dev.thor.rombutler.domain.model.ArchiveAnalysis
 import dev.thor.rombutler.domain.model.ArchiveType
-import dev.thor.rombutler.domain.model.RomArchive
+import dev.thor.rombutler.domain.model.DetectedRom
+import dev.thor.rombutler.ui.components.ConfidenceChip
 import dev.thor.rombutler.ui.components.formatDate
 import dev.thor.rombutler.ui.components.formatFileSize
 
@@ -101,7 +104,7 @@ fun ScanScreen(
             ScanUiState.Scanning -> ScanningIndicator(Modifier.padding(innerPadding))
             ScanUiState.Empty -> EmptyState(Modifier.padding(innerPadding))
             is ScanUiState.Found -> ArchiveList(
-                archives = s.archives,
+                items = s.items,
                 contentPadding = innerPadding,
             )
         }
@@ -154,7 +157,7 @@ private fun EmptyState(modifier: Modifier = Modifier) {
 
 @Composable
 private fun ArchiveList(
-    archives: List<RomArchive>,
+    items: List<ArchiveListItem>,
     contentPadding: PaddingValues,
 ) {
     LazyColumn(
@@ -169,24 +172,25 @@ private fun ArchiveList(
     ) {
         item {
             Text(
-                text = stringResource(R.string.scan_found_count, archives.size),
+                text = stringResource(R.string.scan_found_count, items.size),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 4.dp),
             )
         }
-        items(archives, key = { it.path }) { archive ->
-            ArchiveCard(archive)
+        items(items, key = { it.archive.path }) { item ->
+            ArchiveCard(item)
         }
     }
 }
 
 /**
- * One archive as a card: format badge, file name, size and date.
- * Unsupported formats (RAR5) get a warning row instead of an action.
+ * One archive as a card: format badge, file name, size, date and the
+ * detection results as soon as the analysis finished.
  */
 @Composable
-private fun ArchiveCard(archive: RomArchive) {
+private fun ArchiveCard(item: ArchiveListItem) {
+    val archive = item.archive
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -224,26 +228,118 @@ private fun ArchiveCard(archive: RomArchive) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            if (!archive.type.supported) {
-                Spacer(Modifier.size(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Filled.Warning,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.size(18.dp),
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(R.string.scan_rar5_unsupported),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.secondary,
-                    )
+            AnalysisSection(item.analysis)
+        }
+    }
+}
+
+/** Analysis part of the card: progress, results, warning or error. */
+@Composable
+private fun AnalysisSection(analysis: ArchiveAnalysis?) {
+    Spacer(Modifier.size(10.dp))
+    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+    Spacer(Modifier.size(10.dp))
+
+    when (analysis) {
+        null -> Row(verticalAlignment = Alignment.CenterVertically) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(16.dp),
+                strokeWidth = 2.dp,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Spacer(Modifier.width(10.dp))
+            Text(
+                text = stringResource(R.string.analysis_running),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+
+        is ArchiveAnalysis.Unsupported -> IconTextRow(
+            icon = Icons.Filled.Warning,
+            text = stringResource(R.string.scan_rar5_unsupported),
+            tint = MaterialTheme.colorScheme.secondary,
+        )
+
+        is ArchiveAnalysis.Failed -> IconTextRow(
+            icon = Icons.Filled.Warning,
+            text = stringResource(R.string.analysis_failed, analysis.message),
+            tint = MaterialTheme.colorScheme.error,
+        )
+
+        is ArchiveAnalysis.Success -> {
+            if (analysis.roms.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.analysis_no_roms),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    for (rom in analysis.roms.take(MAX_ROM_ROWS)) {
+                        DetectedRomRow(rom)
+                    }
+                    val more = analysis.roms.size - MAX_ROM_ROWS
+                    if (more > 0) {
+                        Text(
+                            text = stringResource(R.string.analysis_more_roms, more),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
         }
     }
 }
+
+@Composable
+private fun DetectedRomRow(rom: DetectedRom) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = rom.group.primary,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
+        Spacer(Modifier.width(8.dp))
+        rom.detection.system?.let { system ->
+            Text(
+                text = system.esdeFolder,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Spacer(Modifier.width(6.dp))
+        }
+        ConfidenceChip(rom.detection.confidence)
+    }
+}
+
+@Composable
+private fun IconTextRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    text: String,
+    tint: androidx.compose.ui.graphics.Color,
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = tint,
+            modifier = Modifier.size(18.dp),
+        )
+        Spacer(Modifier.width(8.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = tint,
+        )
+    }
+}
+
+private const val MAX_ROM_ROWS = 4
 
 /** Small rounded chip showing the container format. */
 @Composable

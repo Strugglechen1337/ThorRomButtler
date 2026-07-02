@@ -36,4 +36,15 @@
     <string name="scan_empty_hint">Im Download-Ordner liegen keine ZIP-, 7z- oder RAR-Dateien.</string>
     <string name="scan_found_count">%d Archive gefunden</string>
     <string name="scan_rar5_unsupported">RAR5 wird nicht unterstützt – bitte als ZIP oder 7z laden.</string>
+
+    <!-- Archive analysis -->
+    <string name="analysis_running">Analysiere Inhalt …</string>
+    <string name="analysis_failed">Analyse fehlgeschlagen: %s</string>
+    <string name="analysis_no_roms">Keine ROMs im Archiv erkannt.</string>
+    <string name="analysis_more_roms">+ %d weitere</string>
+
+    <!-- Confidence labels -->
+    <string name="confidence_certain">Sicher</string>
+    <string name="confidence_probable">Wahrscheinlich</string>
+    <string name="confidence_unknown">Unbekannt</string>
 </resources>
