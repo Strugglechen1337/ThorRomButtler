@@ -78,6 +78,15 @@ class ScanViewModel @Inject constructor(
         return true
     }
 
+    /**
+     * Rescan unless a directory scan is already running — used when the
+     * screen resumes (e.g. returning from review after a move run) so
+     * moved archives disappear from the list.
+     */
+    fun rescanIfIdle() {
+        if (_uiState.value != ScanUiState.Scanning) rescan()
+    }
+
     /** Scans the download folder, then analyzes each archive sequentially. */
     fun rescan() {
         scanJob?.cancel()

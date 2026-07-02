@@ -65,4 +65,15 @@
     <string name="review_folders_created">%d Ordner angelegt</string>
     <string name="review_folders_partly_failed">%1$d Ordner angelegt, %2$d fehlgeschlagen</string>
     <string name="system_picker_title">Zielsystem wählen</string>
+    <string name="review_blocked_hint">%d Archive blockiert (gemischte oder unvollständige Zuordnung)</string>
+    <string name="review_moving">Verschiebe …</string>
+    <plurals name="review_move_button">
+        <item quantity="one">1 Archiv verschieben</item>
+        <item quantity="other">%d Archive verschieben</item>
+    </plurals>
+
+    <!-- Log screen -->
+    <string name="log_title">Log</string>
+    <string name="log_clear">Log leeren</string>
+    <string name="log_empty">Noch keine Aktionen protokolliert.</string>
 </resources>

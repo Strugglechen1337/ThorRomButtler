@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CreateNewFolder
+import androidx.compose.material.icons.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material3.Button
@@ -43,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -63,6 +65,7 @@ import dev.thor.rombutler.ui.components.formatFileSize
 @Composable
 fun ReviewScreen(
     onBack: () -> Unit,
+    onMoved: () -> Unit,
     viewModel: ReviewViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -82,6 +85,14 @@ fun ReviewScreen(
         if (folderResultText != null) {
             snackbarHostState.showSnackbar(folderResultText)
             viewModel.consumeFolderResult()
+        }
+    }
+
+    // Move run finished -> hand over to the log screen
+    LaunchedEffect(state.moveSummary) {
+        if (state.moveSummary != null) {
+            viewModel.consumeMoveSummary()
+            onMoved()
         }
     }
 
@@ -108,6 +119,7 @@ fun ReviewScreen(
             ReviewBottomBar(
                 state = state,
                 onCreateFolders = viewModel::createMissingFolders,
+                onMove = viewModel::moveAssigned,
             )
         },
     ) { innerPadding ->
@@ -149,6 +161,7 @@ fun ReviewScreen(
 private fun ReviewBottomBar(
     state: ReviewUiState,
     onCreateFolders: () -> Unit,
+    onMove: () -> Unit,
 ) {
     Surface(color = MaterialTheme.colorScheme.surfaceContainerHigh) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -161,9 +174,17 @@ private fun ReviewBottomBar(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            if (state.blockedArchiveCount > 0) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.review_blocked_hint, state.blockedArchiveCount),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.secondary,
+                )
+            }
             if (state.missingFolderCount > 0 || state.creatingFolders) {
                 Spacer(Modifier.height(10.dp))
-                Button(
+                OutlinedButton(
                     onClick = onCreateFolders,
                     enabled = !state.creatingFolders,
                     modifier = Modifier
@@ -174,7 +195,7 @@ private fun ReviewBottomBar(
                         CircularProgressIndicator(
                             modifier = Modifier.size(18.dp),
                             strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.onPrimary,
+                            color = MaterialTheme.colorScheme.primary,
                         )
                     } else {
                         Icon(
@@ -184,6 +205,42 @@ private fun ReviewBottomBar(
                         )
                         Spacer(Modifier.width(8.dp))
                         Text(stringResource(R.string.review_create_folders))
+                    }
+                }
+            }
+            val movableCount = state.movableArchivePaths.size
+            if (movableCount > 0 || state.moving) {
+                Spacer(Modifier.height(10.dp))
+                Button(
+                    onClick = onMove,
+                    enabled = !state.moving && !state.creatingFolders,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                ) {
+                    if (state.moving) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Text(stringResource(R.string.review_moving))
+                    } else {
+                        Icon(
+                            imageVector = Icons.Filled.DriveFileMove,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = pluralStringResource(
+                                R.plurals.review_move_button,
+                                movableCount,
+                                movableCount,
+                            ),
+                            style = MaterialTheme.typography.labelLarge,
+                        )
                     }
                 }
             }

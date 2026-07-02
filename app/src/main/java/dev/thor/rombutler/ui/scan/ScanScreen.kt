@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.FolderOff
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
@@ -42,6 +43,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.thor.rombutler.R
 import dev.thor.rombutler.domain.model.ArchiveAnalysis
@@ -60,9 +63,16 @@ import dev.thor.rombutler.ui.components.formatFileSize
 fun ScanScreen(
     onOpenSetup: () -> Unit,
     onOpenReview: () -> Unit,
+    onOpenLog: () -> Unit,
     viewModel: ScanViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Refresh when coming back (moved archives must disappear); the guard
+    // in rescanIfIdle prevents a double scan on first composition.
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        viewModel.rescanIfIdle()
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -112,6 +122,13 @@ fun ScanScreen(
                             imageVector = Icons.Filled.Refresh,
                             contentDescription = stringResource(R.string.scan_refresh),
                             tint = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                    IconButton(onClick = onOpenLog) {
+                        Icon(
+                            imageVector = Icons.Filled.History,
+                            contentDescription = stringResource(R.string.log_title),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                     IconButton(onClick = onOpenSetup) {

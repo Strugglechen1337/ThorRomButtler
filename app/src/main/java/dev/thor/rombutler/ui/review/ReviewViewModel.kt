@@ -7,6 +7,9 @@ import dev.thor.rombutler.domain.detection.SystemRegistry
 import dev.thor.rombutler.domain.model.Confidence
 import dev.thor.rombutler.domain.model.DetectedRom
 import dev.thor.rombutler.domain.model.SystemDefinition
+import dev.thor.rombutler.domain.model.LogLevel
+import dev.thor.rombutler.domain.repository.ArchiveMover
+import dev.thor.rombutler.domain.repository.LogRepository
 import dev.thor.rombutler.domain.repository.RomFolderRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -44,25 +47,58 @@ data class ReviewItem(
 data class FolderCreationResult(val created: Int, val failed: Int)
 
 /**
+ * One-shot feedback after a move run (formatted by the UI).
+ */
+data class MoveSummary(val moved: Int, val failed: Int)
+
+/**
  * UI state of the review screen.
  *
  * @property items all ROMs of the current scan session.
  * @property creatingFolders folder creation in progress.
  * @property folderResult one-shot feedback after creating folders.
+ * @property moving move run in progress.
+ * @property moveSummary one-shot feedback after moving (UI navigates to log).
  */
 data class ReviewUiState(
     val items: List<ReviewItem> = emptyList(),
     val creatingFolders: Boolean = false,
     val folderResult: FolderCreationResult? = null,
+    val moving: Boolean = false,
+    val moveSummary: MoveSummary? = null,
 ) {
     val assignedCount: Int get() = items.count { it.selectedSystemId != null }
     val missingFolderCount: Int get() = items.count { it.selectedSystemId != null && it.targetExists == false }
+
+    private val itemsByArchive: Map<String, List<ReviewItem>>
+        get() = items.groupBy { it.archivePath }
+
+    /**
+     * Archives ready to move: EVERY ROM group inside is assigned and all
+     * point to the SAME system. Archives are moved as a whole (v0.1 does
+     * not extract), so mixed assignments must stay blocked.
+     */
+    val movableArchivePaths: List<String>
+        get() = itemsByArchive
+            .filterValues { group ->
+                group.all { it.selectedSystemId != null } &&
+                    group.map { it.selectedSystemId }.distinct().size == 1
+            }
+            .keys.toList()
+
+    /** Archives with at least one assignment that still cannot be moved. */
+    val blockedArchiveCount: Int
+        get() = itemsByArchive
+            .filterValues { group -> group.any { it.selectedSystemId != null } }
+            .size - movableArchivePaths.size
 }
 
 @HiltViewModel
 class ReviewViewModel @Inject constructor(
     private val session: ReviewSession,
     private val folderRepository: RomFolderRepository,
+    private val archiveMover: ArchiveMover,
+    private val logRepository: LogRepository,
     val registry: SystemRegistry,
 ) : ViewModel() {
 
@@ -168,5 +204,54 @@ class ReviewViewModel @Inject constructor(
     /** Clears the one-shot folder feedback after the UI showed it. */
     fun consumeFolderResult() {
         _uiState.update { it.copy(folderResult = null) }
+    }
+
+    /**
+     * Moves all movable archives into their system folders. Every outcome
+     * is written to the persistent log; the UI navigates to the log screen
+     * when the run finished.
+     */
+    fun moveAssigned() {
+        val state = _uiState.value
+        val plan = state.movableArchivePaths.mapNotNull { path ->
+            val item = state.items.first { it.archivePath == path }
+            val system = registry.byId(item.selectedSystemId ?: return@mapNotNull null)
+                ?: return@mapNotNull null
+            Triple(path, item.archiveFileName, system)
+        }
+        if (plan.isEmpty() || state.moving) return
+
+        _uiState.update { it.copy(moving = true, moveSummary = null) }
+        viewModelScope.launch {
+            var moved = 0
+            var failed = 0
+            for ((path, fileName, system) in plan) {
+                val targetDir = folderRepository.targetPathFor(system)
+                archiveMover.move(path, targetDir)
+                    .onSuccess { newPath ->
+                        moved++
+                        logRepository.append(LogLevel.SUCCESS, "$fileName → $newPath")
+                        // Remove the archive's items from the review list
+                        _uiState.update { s ->
+                            s.copy(items = s.items.filterNot { it.archivePath == path })
+                        }
+                    }
+                    .onFailure { error ->
+                        failed++
+                        logRepository.append(
+                            LogLevel.ERROR,
+                            "$fileName: ${error.message ?: "Unbekannter Fehler"}",
+                        )
+                    }
+            }
+            _uiState.update {
+                it.copy(moving = false, moveSummary = MoveSummary(moved = moved, failed = failed))
+            }
+        }
+    }
+
+    /** Clears the one-shot move feedback after the UI handled it. */
+    fun consumeMoveSummary() {
+        _uiState.update { it.copy(moveSummary = null) }
     }
 }

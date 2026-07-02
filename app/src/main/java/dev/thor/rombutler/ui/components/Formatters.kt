@@ -24,3 +24,10 @@ fun formatFileSize(bytes: Long): String {
  */
 fun formatDate(epochMillis: Long): String =
     DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.GERMANY).format(Date(epochMillis))
+
+/**
+ * Date + time for log entries, e.g. "02.07.2026, 14:53".
+ */
+fun formatDateTime(epochMillis: Long): String =
+    DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.GERMANY)
+        .format(Date(epochMillis))
