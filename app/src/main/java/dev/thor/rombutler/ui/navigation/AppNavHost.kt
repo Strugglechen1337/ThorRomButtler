@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import dev.thor.rombutler.ui.review.ReviewScreen
 import dev.thor.rombutler.ui.scan.ScanScreen
 import dev.thor.rombutler.ui.setup.SetupScreen
 
@@ -34,8 +35,14 @@ fun AppNavHost(
         composable(Routes.SCAN) {
             ScanScreen(
                 onOpenSetup = { navController.navigate(Routes.SETUP) },
+                onOpenReview = { navController.navigate(Routes.REVIEW) },
             )
         }
-        // REVIEW and LOG follow in M5/M6.
+        composable(Routes.REVIEW) {
+            ReviewScreen(
+                onBack = { navController.popBackStack() },
+            )
+        }
+        // LOG follows in M6.
     }
 }

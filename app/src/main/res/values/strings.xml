@@ -4,6 +4,7 @@
 
     <!-- Common actions -->
     <string name="action_cancel">Abbrechen</string>
+    <string name="action_back">Zurück</string>
 
     <!-- Setup screen -->
     <string name="setup_title">Einrichtung</string>
@@ -47,4 +48,21 @@
     <string name="confidence_certain">Sicher</string>
     <string name="confidence_probable">Wahrscheinlich</string>
     <string name="confidence_unknown">Unbekannt</string>
+
+    <!-- Review screen -->
+    <string name="scan_to_review">Zuordnung prüfen</string>
+    <string name="scan_analyzing_wait">Analyse läuft …</string>
+    <string name="review_title">Zuordnung</string>
+    <string name="review_source">aus %1$s · %2$s</string>
+    <string name="review_source_with_members">aus %1$s · %2$d Dateien · %3$s</string>
+    <string name="review_pick_system">System wählen</string>
+    <string name="review_pick_other">Anderes …</string>
+    <string name="review_accept_suggestion">Vorschlag: %s</string>
+    <string name="review_change_system">System ändern</string>
+    <string name="review_folder_missing">Ordner fehlt – wird beim Anlegen erstellt</string>
+    <string name="review_assigned_count">%1$d von %2$d ROMs zugeordnet</string>
+    <string name="review_create_folders">Fehlende Ordner anlegen</string>
+    <string name="review_folders_created">%d Ordner angelegt</string>
+    <string name="review_folders_partly_failed">%1$d Ordner angelegt, %2$d fehlgeschlagen</string>
+    <string name="system_picker_title">Zielsystem wählen</string>
 </resources>

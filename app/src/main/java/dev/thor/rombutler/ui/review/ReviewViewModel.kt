@@ -39,16 +39,21 @@ data class ReviewItem(
 )
 
 /**
+ * One-shot feedback after a folder-creation run (formatted by the UI).
+ */
+data class FolderCreationResult(val created: Int, val failed: Int)
+
+/**
  * UI state of the review screen.
  *
  * @property items all ROMs of the current scan session.
  * @property creatingFolders folder creation in progress.
- * @property folderMessage one-shot feedback after creating folders.
+ * @property folderResult one-shot feedback after creating folders.
  */
 data class ReviewUiState(
     val items: List<ReviewItem> = emptyList(),
     val creatingFolders: Boolean = false,
-    val folderMessage: String? = null,
+    val folderResult: FolderCreationResult? = null,
 ) {
     val assignedCount: Int get() = items.count { it.selectedSystemId != null }
     val missingFolderCount: Int get() = items.count { it.selectedSystemId != null && it.targetExists == false }
@@ -137,7 +142,7 @@ class ReviewViewModel @Inject constructor(
             .distinctBy { it.id }
         if (systems.isEmpty()) return
 
-        _uiState.update { it.copy(creatingFolders = true, folderMessage = null) }
+        _uiState.update { it.copy(creatingFolders = true, folderResult = null) }
         viewModelScope.launch {
             var created = 0
             var failed = 0
@@ -146,28 +151,22 @@ class ReviewViewModel @Inject constructor(
                     .onSuccess { created++ }
                     .onFailure { failed++ }
             }
-            // Refresh existence flags for all affected items
-            _uiState.update { state ->
-                state.copy(creatingFolders = false)
-            }
+            // Refresh existence flags for all assigned items
             val affected = _uiState.value.items.filter { it.selectedSystemId != null }
             for (item in affected) {
                 selectSystem(item.id, item.selectedSystemId!!)
             }
             _uiState.update {
                 it.copy(
-                    folderMessage = if (failed == 0) {
-                        "$created Ordner angelegt"
-                    } else {
-                        "$created angelegt, $failed fehlgeschlagen"
-                    },
+                    creatingFolders = false,
+                    folderResult = FolderCreationResult(created = created, failed = failed),
                 )
             }
         }
     }
 
     /** Clears the one-shot folder feedback after the UI showed it. */
-    fun consumeFolderMessage() {
-        _uiState.update { it.copy(folderMessage = null) }
+    fun consumeFolderResult() {
+        _uiState.update { it.copy(folderResult = null) }
     }
 }

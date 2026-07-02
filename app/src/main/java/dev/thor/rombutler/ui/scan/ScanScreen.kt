@@ -19,8 +19,11 @@ import androidx.compose.material.icons.filled.FolderOff
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -56,12 +59,37 @@ import dev.thor.rombutler.ui.components.formatFileSize
 @Composable
 fun ScanScreen(
     onOpenSetup: () -> Unit,
+    onOpenReview: () -> Unit,
     viewModel: ScanViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        bottomBar = {
+            val found = state as? ScanUiState.Found
+            if (found != null && found.hasReviewableRoms) {
+                Surface(color = MaterialTheme.colorScheme.surfaceContainerHigh) {
+                    Button(
+                        onClick = { if (viewModel.prepareReview()) onOpenReview() },
+                        enabled = found.analysisComplete,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .height(52.dp),
+                    ) {
+                        Text(
+                            text = if (found.analysisComplete) {
+                                stringResource(R.string.scan_to_review)
+                            } else {
+                                stringResource(R.string.scan_analyzing_wait)
+                            },
+                            style = MaterialTheme.typography.labelLarge,
+                        )
+                    }
+                }
+            }
+        },
         topBar = {
             TopAppBar(
                 title = {

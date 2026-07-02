@@ -6,9 +6,11 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.thor.rombutler.data.archive.CommonsArchiveAnalyzer
 import dev.thor.rombutler.data.files.FileArchiveScanner
+import dev.thor.rombutler.data.files.RomFolderManager
 import dev.thor.rombutler.data.settings.SettingsDataStore
 import dev.thor.rombutler.domain.repository.ArchiveAnalyzer
 import dev.thor.rombutler.domain.repository.ArchiveRepository
+import dev.thor.rombutler.domain.repository.RomFolderRepository
 import dev.thor.rombutler.domain.repository.SettingsRepository
 import javax.inject.Singleton
 
@@ -30,4 +32,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindArchiveAnalyzer(impl: CommonsArchiveAnalyzer): ArchiveAnalyzer
+
+    @Binds
+    @Singleton
+    abstract fun bindRomFolderRepository(impl: RomFolderManager): RomFolderRepository
 }

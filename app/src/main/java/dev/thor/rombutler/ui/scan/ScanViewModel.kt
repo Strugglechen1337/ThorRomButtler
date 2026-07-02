@@ -7,6 +7,7 @@ import dev.thor.rombutler.domain.model.ArchiveAnalysis
 import dev.thor.rombutler.domain.model.RomArchive
 import dev.thor.rombutler.domain.repository.ArchiveAnalyzer
 import dev.thor.rombutler.domain.repository.ArchiveRepository
+import dev.thor.rombutler.ui.review.ReviewSession
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,13 +37,21 @@ sealed interface ScanUiState {
     data object Empty : ScanUiState
 
     /** Archives found; analyses stream in one by one. */
-    data class Found(val items: List<ArchiveListItem>) : ScanUiState
+    data class Found(val items: List<ArchiveListItem>) : ScanUiState {
+        /** All analyses finished? */
+        val analysisComplete: Boolean get() = items.all { it.analysis != null }
+
+        /** Anything to review (at least one readable ROM)? */
+        val hasReviewableRoms: Boolean
+            get() = items.any { (it.analysis as? ArchiveAnalysis.Success)?.roms?.isNotEmpty() == true }
+    }
 }
 
 @HiltViewModel
 class ScanViewModel @Inject constructor(
     private val archiveRepository: ArchiveRepository,
     private val archiveAnalyzer: ArchiveAnalyzer,
+    private val reviewSession: ReviewSession,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ScanUiState>(ScanUiState.Scanning)
@@ -52,6 +61,21 @@ class ScanViewModel @Inject constructor(
 
     init {
         rescan()
+    }
+
+    /**
+     * Hands the successful analyses over to the review flow.
+     *
+     * @return true when there is something to review.
+     */
+    fun prepareReview(): Boolean {
+        val state = _uiState.value as? ScanUiState.Found ?: return false
+        val successes = state.items
+            .mapNotNull { it.analysis as? ArchiveAnalysis.Success }
+            .filter { it.roms.isNotEmpty() }
+        if (successes.isEmpty()) return false
+        reviewSession.analyses = successes
+        return true
     }
 
     /** Scans the download folder, then analyzes each archive sequentially. */
