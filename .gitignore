@@ -1,0 +1,26 @@
+# Gradle
+.gradle/
+build/
+app/build/
+
+# Local configuration (SDK path etc.)
+local.properties
+
+# IDE
+.idea/
+*.iml
+.kotlin/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Signing
+*.jks
+*.keystore
+
+# Logs
+*.log
+
+# Claude Code local settings
+.claude/settings.local.json

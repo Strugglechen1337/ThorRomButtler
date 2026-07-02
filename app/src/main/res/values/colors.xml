@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Keep in sync with ui/theme/Color.kt (ThorBackground, ThorNeon) -->
+    <color name="thor_background">#060A14</color>
+    <color name="thor_neon">#38C8FF</color>
+    <color name="ic_launcher_background">#0C1322</color>
+</resources>

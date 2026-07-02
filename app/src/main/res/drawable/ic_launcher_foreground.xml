@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lightning bolt on the adaptive-icon safe zone (66/108 center circle).
+     Neon blue bolt with a gold core stripe — placeholder until M7 polish. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Outer bolt, neon blue -->
+    <path
+        android:fillColor="#38C8FF"
+        android:pathData="M60,26 L40,58 L51,58 L46,82 L68,48 L56,48 Z" />
+
+    <!-- Inner highlight stripe, gold -->
+    <path
+        android:fillColor="#F5C542"
+        android:pathData="M57,32 L46,52 L52,52 L49,68 L61,50 L54,50 Z" />
+</vector>
