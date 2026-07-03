@@ -61,7 +61,7 @@ class GitHubUpdateChecker @Inject constructor(
     }
 
     companion object {
-        const val REPO_OWNER = "REPLACE_ME_OWNER" // set when the repo exists
+        const val REPO_OWNER = "Strugglechen1337"
         const val REPO_NAME = "ThorRomButtler"
         private const val API_URL =
             "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases/latest"
