@@ -5,6 +5,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.thor.rombutler.di.IoDispatcher
 import dev.thor.rombutler.domain.model.LogEntry
 import dev.thor.rombutler.domain.model.LogLevel
+import dev.thor.rombutler.domain.model.UndoInfo
+import dev.thor.rombutler.domain.model.UndoKind
 import dev.thor.rombutler.domain.repository.LogRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -41,20 +43,19 @@ class FileLogRepository @Inject constructor(
         scope.launch { _entries.value = load() }
     }
 
-    override suspend fun append(level: LogLevel, message: String) =
+    override suspend fun append(level: LogLevel, message: String, undo: UndoInfo?) =
         withContext(ioDispatcher) {
             mutex.withLock {
                 val entry = LogEntry(
                     timestampMillis = System.currentTimeMillis(),
                     level = level,
                     message = message,
+                    undo = undo,
                 )
                 val updated = (listOf(entry) + _entries.value).take(MAX_ENTRIES)
                 if (updated.size < _entries.value.size + 1) {
                     // Rotation kicked in: rewrite the file with the kept set
-                    logFile.writeText(
-                        updated.asReversed().joinToString("\n", postfix = "\n") { it.toLine() },
-                    )
+                    rewrite(updated)
                 } else {
                     logFile.appendText(entry.toLine() + "\n")
                 }
@@ -62,11 +63,31 @@ class FileLogRepository @Inject constructor(
             }
         }
 
+    override suspend fun markUndone(entry: LogEntry) = withContext(ioDispatcher) {
+        mutex.withLock {
+            val updated = _entries.value.map {
+                if (it.timestampMillis == entry.timestampMillis && it.message == entry.message) {
+                    it.copy(undone = true)
+                } else {
+                    it
+                }
+            }
+            rewrite(updated)
+            _entries.value = updated
+        }
+    }
+
     override suspend fun clear() = withContext(ioDispatcher) {
         mutex.withLock {
             logFile.delete()
             _entries.value = emptyList()
         }
+    }
+
+    private fun rewrite(entries: List<LogEntry>) {
+        logFile.writeText(
+            entries.asReversed().joinToString("\n", postfix = "\n") { it.toLine() },
+        )
     }
 
     private fun load(): List<LogEntry> {
@@ -82,17 +103,52 @@ class FileLogRepository @Inject constructor(
         /** Rotation cap — the log must not grow unbounded. */
         private const val MAX_ENTRIES = 500
 
-        private fun LogEntry.toLine(): String =
-            "$timestampMillis\t$level\t${message.replace("\n", "\\n")}"
+        // Line format v2: ts \t level \t undone(0/1) \t undoJson("-" = none) \t message
+        // (message last because it is the only free-text field). v1 lines
+        // (ts \t level \t message) are still parsed for existing logs.
+        private fun LogEntry.toLine(): String {
+            val json = undo?.let { info ->
+                org.json.JSONObject()
+                    .put("kind", info.kind.name)
+                    .put("created", org.json.JSONArray(info.createdFiles))
+                    .put("restore", org.json.JSONArray(info.restoreTo))
+                    .putOpt("archive", info.sourceArchivePath)
+                    .toString()
+            } ?: "-"
+            return "$timestampMillis\t$level\t${if (undone) 1 else 0}\t$json\t" +
+                message.replace("\n", "\\n")
+        }
 
         private fun String.toEntryOrNull(): LogEntry? {
-            val parts = split('\t', limit = 3)
-            if (parts.size != 3) return null
-            return LogEntry(
-                timestampMillis = parts[0].toLongOrNull() ?: return null,
-                level = runCatching { LogLevel.valueOf(parts[1]) }.getOrNull() ?: return null,
-                message = parts[2].replace("\\n", "\n"),
-            )
+            val parts = split('\t', limit = 5)
+            val timestamp = parts.getOrNull(0)?.toLongOrNull() ?: return null
+            val level = parts.getOrNull(1)
+                ?.let { runCatching { LogLevel.valueOf(it) }.getOrNull() } ?: return null
+            return when (parts.size) {
+                3 -> LogEntry(timestamp, level, parts[2].replace("\\n", "\n"))
+                5 -> LogEntry(
+                    timestampMillis = timestamp,
+                    level = level,
+                    message = parts[4].replace("\\n", "\n"),
+                    undone = parts[2] == "1",
+                    undo = parts[3].takeIf { it != "-" }?.let { json ->
+                        runCatching {
+                            val obj = org.json.JSONObject(json)
+                            UndoInfo(
+                                kind = UndoKind.valueOf(obj.getString("kind")),
+                                createdFiles = obj.getJSONArray("created").toStringList(),
+                                restoreTo = obj.getJSONArray("restore").toStringList(),
+                                sourceArchivePath = obj.optString("archive").takeIf { it.isNotEmpty() },
+                            )
+                        }.getOrNull()
+                    },
+                )
+
+                else -> null
+            }
         }
+
+        private fun org.json.JSONArray.toStringList(): List<String> =
+            (0 until length()).map { getString(it) }
     }
 }

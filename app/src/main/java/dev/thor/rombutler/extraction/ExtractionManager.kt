@@ -7,6 +7,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.thor.rombutler.di.IoDispatcher
 import dev.thor.rombutler.domain.model.ArchiveType
 import dev.thor.rombutler.domain.model.LogLevel
+import dev.thor.rombutler.domain.model.UndoInfo
+import dev.thor.rombutler.domain.model.UndoKind
 import dev.thor.rombutler.domain.repository.LogRepository
 import dev.thor.rombutler.domain.repository.RomExtractor
 import kotlinx.coroutines.CoroutineDispatcher
@@ -179,9 +181,24 @@ class ExtractionManager @Inject constructor(
                     result.onSuccess { files ->
                         processed++
                         processedIds += task.id
+                        // Structured undo info makes the log entry revertible
+                        val undo = when (val source = task.source) {
+                            is TaskSource.Archive -> UndoInfo(
+                                kind = UndoKind.EXTRACTED,
+                                createdFiles = files,
+                                sourceArchivePath = source.archivePath,
+                            )
+
+                            is TaskSource.Loose -> UndoInfo(
+                                kind = UndoKind.MOVED,
+                                createdFiles = files,
+                                restoreTo = task.entryPaths,
+                            )
+                        }
                         logRepository.append(
                             LogLevel.SUCCESS,
                             "${task.primaryName} → ${task.targetDir} (${files.size} Datei(en))",
+                            undo = undo,
                         )
                     }.onFailure { error ->
                         failed++

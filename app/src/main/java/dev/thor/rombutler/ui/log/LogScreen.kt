@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Error
@@ -29,6 +30,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -141,7 +143,7 @@ fun LogScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 items(entries, key = { "${it.timestampMillis}-${it.message.hashCode()}" }) { entry ->
-                    LogEntryCard(entry)
+                    LogEntryCard(entry, onUndo = viewModel::undo)
                 }
             }
         }
@@ -154,7 +156,7 @@ private fun List<LogEntry>.toShareText(): String =
     }
 
 @Composable
-private fun LogEntryCard(entry: LogEntry) {
+private fun LogEntryCard(entry: LogEntry, onUndo: (LogEntry) -> Unit) {
     val (icon, tint) = when (entry.level) {
         LogLevel.SUCCESS -> Icons.Filled.CheckCircle to MaterialTheme.colorScheme.primary
         LogLevel.ERROR -> Icons.Filled.Error to MaterialTheme.colorScheme.error
@@ -189,6 +191,25 @@ private fun LogEntryCard(entry: LogEntry) {
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                if (entry.undo != null) {
+                    if (entry.undone) {
+                        Text(
+                            text = stringResource(R.string.log_undone),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    } else {
+                        TextButton(onClick = { onUndo(entry) }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Undo,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(stringResource(R.string.log_undo))
+                        }
+                    }
+                }
             }
         }
     }

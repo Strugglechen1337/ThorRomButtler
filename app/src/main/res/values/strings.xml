@@ -102,6 +102,8 @@
     <string name="log_share">Share log</string>
     <string name="log_share_subject">Thor ROM Butler log</string>
     <string name="log_empty">No actions logged yet.</string>
+    <string name="log_undo">Undo</string>
+    <string name="log_undone">Undone</string>
 
     <!-- Settings screen -->
     <string name="settings_title">Settings</string>
