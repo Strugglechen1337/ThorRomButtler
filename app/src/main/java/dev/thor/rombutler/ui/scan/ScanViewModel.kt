@@ -46,10 +46,13 @@ sealed interface ScanUiState {
         /** All analyses finished? */
         val analysisComplete: Boolean get() = items.all { it.analysis != null }
 
-        /** Anything to review (at least one readable ROM)? */
+        /**
+         * Anything to review? Readable archives WITHOUT detected ROMs also
+         * count — they can be assigned as a whole (arcade ROM sets).
+         */
         val hasReviewableRoms: Boolean
             get() = looseRoms.isNotEmpty() ||
-                items.any { (it.analysis as? ArchiveAnalysis.Success)?.roms?.isNotEmpty() == true }
+                items.any { it.analysis is ArchiveAnalysis.Success }
     }
 }
 
@@ -77,9 +80,8 @@ class ScanViewModel @Inject constructor(
      */
     fun prepareReview(): Boolean {
         val state = _uiState.value as? ScanUiState.Found ?: return false
-        val successes = state.items
-            .mapNotNull { it.analysis as? ArchiveAnalysis.Success }
-            .filter { it.roms.isNotEmpty() }
+        // Empty successes stay in: review offers them as whole archives
+        val successes = state.items.mapNotNull { it.analysis as? ArchiveAnalysis.Success }
         if (successes.isEmpty() && state.looseRoms.isEmpty()) return false
         reviewSession.analyses = successes
         reviewSession.looseRoms = state.looseRoms

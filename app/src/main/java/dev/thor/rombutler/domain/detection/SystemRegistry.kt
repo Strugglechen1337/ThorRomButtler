@@ -108,7 +108,12 @@ class SystemRegistry @Inject constructor() {
                 "cue" to PROBABLE,  // cue sheets: almost always PS1 in practice
                 "m3u" to PROBABLE,  // multi-disc playlists: PS1 convention
                 "bin" to UNKNOWN,   // listed for bin+cue grouping only
-                "chd" to UNKNOWN,   // CHD carries no system marker
+                "chd" to UNKNOWN,
+            ),
+            magicRules = listOf(
+                // CD-type CHD: PS1 / Saturn / Dreamcast / PCE share the
+                // format — PS1 is by far the most common, hence PROBABLE.
+                MagicRule.Predicate("chd-cd", PROBABLE, ChdHeader::isCdChd),
             ),
         ),
 
@@ -118,6 +123,8 @@ class SystemRegistry @Inject constructor() {
             esdeFolder = "ps2",
             extensions = mapOf("iso" to UNKNOWN, "chd" to UNKNOWN),
             magicRules = listOf(
+                // DVD-sized CHD without CD codecs: practically always PS2
+                MagicRule.Predicate("chd-dvd", PROBABLE, ChdHeader::isDvdChd),
                 // ISO9660 volume descriptor area: system identifier
                 // "PLAYSTATION" — PS1 discs share it, but PS1 images rarely
                 // come as .iso, hence PROBABLE instead of CERTAIN.
@@ -278,6 +285,24 @@ class SystemRegistry @Inject constructor() {
             displayName = "Atari 2600",
             esdeFolder = "atari2600",
             extensions = mapOf("a26" to CERTAIN),
+        ),
+
+        // Arcade systems: ROM sets are ZIPs that MUST stay zipped. They
+        // claim no extensions (a plain .zip is indistinguishable from a
+        // ROM archive) — users assign whole archives manually in review,
+        // which moves the ZIP unextracted.
+        SystemDefinition(
+            id = "arcade",
+            displayName = "Arcade (MAME)",
+            esdeFolder = "arcade",
+            extensions = emptyMap(),
+        ),
+
+        SystemDefinition(
+            id = "neogeo",
+            displayName = "Neo Geo",
+            esdeFolder = "neogeo",
+            extensions = emptyMap(),
         ),
     )
 

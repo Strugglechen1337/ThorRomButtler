@@ -94,7 +94,19 @@ class CommonsArchiveAnalyzer @Inject constructor(
                 otherExtensions = otherExtensions,
             )
         } catch (e: Exception) {
-            ArchiveAnalysis.Failed(archive, e.message ?: e.javaClass.simpleName)
+            ArchiveAnalysis.Failed(archive, e.toUserMessage())
+        }
+    }
+
+    /** Maps library exceptions to actionable German messages. */
+    private fun Exception.toUserMessage(): String {
+        val name = javaClass.simpleName
+        return when {
+            this is org.apache.commons.compress.PasswordRequiredException ||
+                "Encrypted" in name || "Password" in name ->
+                "Archiv ist passwortgeschützt"
+
+            else -> message ?: name
         }
     }
 

@@ -1,6 +1,9 @@
 package dev.thor.rombutler.ui.settings
 
+import android.app.DownloadManager
 import android.content.Context
+import android.net.Uri
+import android.os.Environment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -68,8 +71,28 @@ class SettingsViewModel @Inject constructor(
                 .onSuccess { _updateState.value = UpdateCheckState.Done(it) }
                 .onFailure {
                     _updateState.value =
-                        UpdateCheckState.Failed(it.message ?: "Unbekannter Fehler")
+                        UpdateCheckState.Failed(it.message ?: "?")
                 }
         }
+    }
+
+    /**
+     * Downloads the release APK via [DownloadManager]. The system shows a
+     * download notification; tapping it when finished opens the installer.
+     */
+    fun downloadUpdate(info: UpdateInfo) {
+        val url = info.apkDownloadUrl ?: return
+        val request = DownloadManager.Request(Uri.parse(url))
+            .setTitle("Thor ROM Butler ${info.latestVersion}")
+            .setMimeType("application/vnd.android.package-archive")
+            .setDestinationInExternalPublicDir(
+                Environment.DIRECTORY_DOWNLOADS,
+                "ThorRomButler-v${info.latestVersion}.apk",
+            )
+            .setNotificationVisibility(
+                DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED,
+            )
+        (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager)
+            .enqueue(request)
     }
 }

@@ -29,7 +29,14 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      # Skip the whole signed build gracefully while the signing secrets
+      # are not configured yet (manual releases are used instead).
+      - name: Check signing secrets
+        id: signing
+        run: echo "available=${{ secrets.SIGNING_KEYSTORE_BASE64 != '' }}" >> "$GITHUB_OUTPUT"
+
       - name: Decode keystore
+        if: steps.signing.outputs.available == 'true'
         run: |
           mkdir -p signing
           echo "$SIGNING_KEYSTORE_BASE64" | base64 -d > signing/thor-release.jks
@@ -40,6 +47,7 @@ jobs:
         run: ./gradlew testDebugUnitTest
 
       - name: Build signed release APK
+        if: steps.signing.outputs.available == 'true'
         run: ./gradlew assembleRelease
         env:
           SIGNING_STORE_FILE: thor-release.jks
@@ -48,11 +56,13 @@ jobs:
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
 
       - name: Rename APK
+        if: steps.signing.outputs.available == 'true'
         run: |
           cp app/build/outputs/apk/release/app-release.apk \
              ThorRomButler-${{ github.ref_name }}.apk
 
       - name: Create GitHub release
+        if: steps.signing.outputs.available == 'true'
         uses: softprops/action-gh-release@v2
         with:
           files: ThorRomButler-${{ github.ref_name }}.apk

@@ -117,10 +117,21 @@ class ZipEntrySource @Inject constructor() : ArchiveEntrySource {
             for ((entryPath, targetFile) in targets) {
                 val entry = zip.getEntry(entryPath)
                     ?: throw java.io.IOException("Eintrag nicht gefunden: $entryPath")
+                // ZIP stores a CRC32 per entry — verify multi-GB writes
+                val crc = java.util.zip.CRC32()
                 zip.getInputStream(entry).use { input ->
                     ProgressOutputStream(targetFile.outputStream(), onBytesWritten).use { output ->
-                        input.copyTo(output, bufferSize = 256 * 1024)
+                        val buffer = ByteArray(256 * 1024)
+                        while (true) {
+                            val read = input.read(buffer)
+                            if (read < 0) break
+                            crc.update(buffer, 0, read)
+                            output.write(buffer, 0, read)
+                        }
                     }
+                }
+                if (entry.crc >= 0 && entry.crc != crc.value) {
+                    throw java.io.IOException("CRC-Prüfung fehlgeschlagen: ${targetFile.name}")
                 }
             }
         }

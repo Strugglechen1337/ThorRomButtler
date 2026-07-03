@@ -49,8 +49,16 @@ class FileLogRepository @Inject constructor(
                     level = level,
                     message = message,
                 )
-                logFile.appendText(entry.toLine() + "\n")
-                _entries.value = listOf(entry) + _entries.value
+                val updated = (listOf(entry) + _entries.value).take(MAX_ENTRIES)
+                if (updated.size < _entries.value.size + 1) {
+                    // Rotation kicked in: rewrite the file with the kept set
+                    logFile.writeText(
+                        updated.asReversed().joinToString("\n", postfix = "\n") { it.toLine() },
+                    )
+                } else {
+                    logFile.appendText(entry.toLine() + "\n")
+                }
+                _entries.value = updated
             }
         }
 
@@ -70,6 +78,9 @@ class FileLogRepository @Inject constructor(
 
     companion object {
         private const val FILE_NAME = "action_log.txt"
+
+        /** Rotation cap — the log must not grow unbounded. */
+        private const val MAX_ENTRIES = 500
 
         private fun LogEntry.toLine(): String =
             "$timestampMillis\t$level\t${message.replace("\n", "\\n")}"

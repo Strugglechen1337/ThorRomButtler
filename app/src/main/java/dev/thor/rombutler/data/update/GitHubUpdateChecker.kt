@@ -14,11 +14,14 @@ import javax.inject.Singleton
  *
  * @property latestVersion version of the newest GitHub release (no "v").
  * @property releaseUrl browser URL of that release.
+ * @property apkDownloadUrl direct download URL of the release APK asset,
+ *   `null` when the release has no APK attached.
  * @property isNewer true when the release is newer than the installed app.
  */
 data class UpdateInfo(
     val latestVersion: String,
     val releaseUrl: String,
+    val apkDownloadUrl: String?,
     val isNewer: Boolean,
 )
 
@@ -52,9 +55,22 @@ class GitHubUpdateChecker @Inject constructor(
 
             val json = JSONObject(body)
             val tag = json.getString("tag_name").removePrefix("v")
+            // First .apk asset of the release, if any
+            val assets = json.optJSONArray("assets")
+            var apkUrl: String? = null
+            if (assets != null) {
+                for (i in 0 until assets.length()) {
+                    val asset = assets.getJSONObject(i)
+                    if (asset.optString("name").endsWith(".apk", ignoreCase = true)) {
+                        apkUrl = asset.optString("browser_download_url").takeIf { it.isNotBlank() }
+                        break
+                    }
+                }
+            }
             UpdateInfo(
                 latestVersion = tag,
                 releaseUrl = json.optString("html_url", RELEASES_URL),
+                apkDownloadUrl = apkUrl,
                 isNewer = isNewerVersion(tag, currentVersion.removePrefix("v")),
             )
         }

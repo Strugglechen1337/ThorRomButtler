@@ -65,6 +65,22 @@ sealed interface MagicRule {
         }
     }
 
+    /**
+     * Free-form predicate for container formats whose identification needs
+     * real parsing (e.g. CHD headers: compressor list + logical size).
+     *
+     * @property name stable identifier used for equality/logging.
+     */
+    data class Predicate(
+        val name: String,
+        override val confidence: Confidence,
+        val test: (ByteArray) -> Boolean,
+    ) : MagicRule {
+        override fun matches(header: ByteArray): Boolean = test(header)
+        override fun equals(other: Any?): Boolean = other is Predicate && other.name == name
+        override fun hashCode(): Int = name.hashCode()
+    }
+
     /** [BytesAt] semantics, but the sequence may appear anywhere in a range. */
     data class BytesInRange(
         val rangeStart: Int,

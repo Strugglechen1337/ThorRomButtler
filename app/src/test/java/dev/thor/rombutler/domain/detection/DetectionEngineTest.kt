@@ -84,10 +84,43 @@ class DetectionEngineTest {
     }
 
     @Test
-    fun `chd stays unknown`() {
-        // CHD containers carry no system marker — honest UNKNOWN.
+    fun `chd without header stays unknown`() {
         val result = engine.detect("Gran Turismo 2.chd")
         assertThat(result.confidence).isEqualTo(Confidence.UNKNOWN)
+    }
+
+    @Test
+    fun `cd-type chd is probable ps1`() {
+        val header = chdHeader(compressor = "cdlz", logicalBytes = 700L * 1024 * 1024)
+        val result = engine.detect("Gran Turismo 2.chd", header)
+        assertThat(result.system?.id).isEqualTo("psx")
+        assertThat(result.confidence).isEqualTo(Confidence.PROBABLE)
+    }
+
+    @Test
+    fun `dvd-sized chd is probable ps2`() {
+        val header = chdHeader(compressor = "lzma", logicalBytes = 4_400L * 1024 * 1024)
+        val result = engine.detect("Gran Turismo 4.chd", header)
+        assertThat(result.system?.id).isEqualTo("ps2")
+        assertThat(result.confidence).isEqualTo(Confidence.PROBABLE)
+    }
+
+    @Test
+    fun `small non-cd chd stays unknown`() {
+        val header = chdHeader(compressor = "lzma", logicalBytes = 64L * 1024 * 1024)
+        assertThat(engine.detect("mystery.chd", header).confidence)
+            .isEqualTo(Confidence.UNKNOWN)
+    }
+
+    /** Builds a minimal CHD v5 header. */
+    private fun chdHeader(compressor: String, logicalBytes: Long): ByteArray {
+        val header = ByteArray(64)
+        "MComprHD".toByteArray(Charsets.US_ASCII).copyInto(header, 0)
+        compressor.toByteArray(Charsets.US_ASCII).copyInto(header, 16)
+        for (i in 0 until 8) {
+            header[32 + i] = (logicalBytes shr ((7 - i) * 8) and 0xFF).toByte()
+        }
+        return header
     }
 
     @Test

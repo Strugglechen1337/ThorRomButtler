@@ -153,6 +153,7 @@ fun SettingsScreen(
                 UpdateSection(
                     state = updateState,
                     onCheck = viewModel::checkForUpdates,
+                    onDownload = viewModel::downloadUpdate,
                     onOpenUrl = { url ->
                         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                     },
@@ -238,6 +239,7 @@ private fun FolderRow(
 private fun UpdateSection(
     state: UpdateCheckState,
     onCheck: () -> Unit,
+    onDownload: (dev.thor.rombutler.data.update.UpdateInfo) -> Unit,
     onOpenUrl: (String) -> Unit,
 ) {
     when (state) {
@@ -275,6 +277,16 @@ private fun UpdateSection(
             )
             if (state.info.isNewer) {
                 Spacer(Modifier.size(8.dp))
+                if (state.info.apkDownloadUrl != null) {
+                    // Direct download: system notification opens the installer
+                    OutlinedButton(
+                        onClick = { onDownload(state.info) },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(R.string.settings_download_update))
+                    }
+                    Spacer(Modifier.size(4.dp))
+                }
                 OutlinedButton(
                     onClick = { onOpenUrl(state.info.releaseUrl) },
                     modifier = Modifier.fillMaxWidth(),

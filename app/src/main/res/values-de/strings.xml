@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Thor ROM Butler</string>
+
+    <!-- Common actions -->
+    <string name="action_cancel">Abbrechen</string>
+    <string name="action_back">Zurück</string>
+
+    <!-- Setup screen -->
+    <string name="setup_title">Einrichtung</string>
+    <string name="setup_subtitle">Drei Schritte, dann übernimmt der Butler.</string>
+    <string name="setup_permission_title">Dateizugriff erlauben</string>
+    <string name="setup_permission_description">Thor ROM Butler braucht Zugriff auf alle Dateien, um Archive zu analysieren und ROMs zu verschieben. Es werden keine Daten ins Internet gesendet.</string>
+    <string name="setup_permission_button">Berechtigung erteilen</string>
+    <string name="setup_permission_granted">Berechtigung erteilt – alles bereit.</string>
+    <string name="setup_download_title">Download-Ordner wählen</string>
+    <string name="setup_download_description">Dieser Ordner wird nach heruntergeladenen ROM-Archiven durchsucht.</string>
+    <string name="setup_rombase_title">ROM-Basisordner wählen</string>
+    <string name="setup_rombase_description">Der Ordner mit deinen System-Unterordnern (z. B. roms/nes, roms/snes). Erkannte ROMs werden dorthin verschoben.</string>
+    <string name="setup_choose_folder">Ordner wählen</string>
+    <string name="setup_step_done">Erledigt</string>
+    <string name="setup_done_button">Los geht’s ⚡</string>
+
+    <!-- Folder picker -->
+    <string name="picker_up">Übergeordneter Ordner</string>
+    <string name="picker_storage_roots">Speicherorte</string>
+    <string name="picker_internal_storage">Interner Speicher</string>
+    <string name="picker_empty">Keine Unterordner vorhanden.</string>
+    <string name="picker_select_this_folder">Diesen Ordner verwenden</string>
+    <string name="picker_select_named_folder">„%s“ verwenden</string>
+
+    <!-- Scan screen -->
+    <string name="scan_title">Archive</string>
+    <string name="scan_refresh">Neu scannen</string>
+    <string name="scan_open_setup">Einrichtung öffnen</string>
+    <string name="scan_in_progress">Durchsuche Download-Ordner …</string>
+    <string name="scan_empty_title">Keine Archive gefunden</string>
+    <string name="scan_empty_hint">Im Download-Ordner liegen keine ZIP-, 7z- oder RAR-Dateien.</string>
+    <string name="scan_found_count">%d Funde</string>
+    <string name="scan_loose_title">Lose ROM-Dateien (%d)</string>
+    <string name="scan_rar5_unsupported">RAR5 wird nicht unterstützt – bitte als ZIP oder 7z laden.</string>
+
+    <!-- Archive analysis -->
+    <string name="analysis_running">Analysiere Inhalt …</string>
+    <string name="analysis_failed">Analyse fehlgeschlagen: %s</string>
+    <string name="analysis_no_roms">Keine ROMs im Archiv erkannt.</string>
+    <string name="analysis_no_roms_with_types">Keine ROMs erkannt – enthaltene Dateitypen: %s</string>
+    <plurals name="analysis_bios_ignored">
+        <item quantity="one">1 BIOS-Datei ignoriert</item>
+        <item quantity="other">%d BIOS-Dateien ignoriert</item>
+    </plurals>
+    <string name="analysis_more_roms">+ %d weitere</string>
+
+    <!-- Confidence labels -->
+    <string name="confidence_certain">Sicher</string>
+    <string name="confidence_probable">Wahrscheinlich</string>
+    <string name="confidence_unknown">Unbekannt</string>
+
+    <!-- Review screen -->
+    <string name="scan_to_review">Zuordnung prüfen</string>
+    <string name="scan_analyzing_wait">Analyse läuft …</string>
+    <string name="review_title">Zuordnung</string>
+    <string name="review_source">aus %1$s · %2$s</string>
+    <string name="review_source_loose">Download-Ordner (lose)</string>
+    <string name="review_source_whole">Ganzes Archiv (bleibt gepackt, z. B. Arcade)</string>
+    <string name="review_accept_all">Alle übernehmen (%d)</string>
+    <string name="review_duplicate_skip">Bereits im Zielordner vorhanden – wird übersprungen</string>
+    <string name="review_duplicate_replace">Vorhandene Datei wird ERSETZT</string>
+    <string name="review_source_with_members">aus %1$s · %2$d Dateien · %3$s</string>
+    <string name="review_pick_system">System wählen</string>
+    <string name="review_pick_other">Anderes …</string>
+    <string name="review_accept_suggestion">Vorschlag: %s</string>
+    <string name="review_change_system">System ändern</string>
+    <string name="review_folder_missing">Ordner fehlt – wird beim Anlegen erstellt</string>
+    <string name="review_assigned_count">%1$d von %2$d ROMs zugeordnet</string>
+    <string name="review_create_folders">Fehlende Ordner anlegen</string>
+    <string name="review_folders_created">%d Ordner angelegt</string>
+    <string name="review_folders_partly_failed">%1$d Ordner angelegt, %2$d fehlgeschlagen</string>
+    <string name="system_picker_title">Zielsystem wählen</string>
+    <string name="review_moving">Entpacke …</string>
+    <string name="review_extract_progress">ROM %1$d von %2$d: %3$s</string>
+    <plurals name="review_move_button">
+        <item quantity="one">1 ROM einsortieren</item>
+        <item quantity="other">%d ROMs einsortieren</item>
+    </plurals>
+
+    <!-- Log screen -->
+    <string name="log_title">Log</string>
+    <string name="log_clear">Log leeren</string>
+    <string name="log_empty">Noch keine Aktionen protokolliert.</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">Einstellungen</string>
+    <string name="settings_folder_not_set">Nicht festgelegt</string>
+    <string name="settings_delete_archives">Archive nach Entpacken löschen</string>
+    <string name="settings_delete_archives_hint">Vollständig einsortierte Archive aus dem Download-Ordner entfernen.</string>
+    <string name="settings_version">Thor ROM Butler %s</string>
+    <string name="settings_check_updates">Auf Updates prüfen</string>
+    <string name="settings_up_to_date">Du hast die neueste Version.</string>
+    <string name="settings_update_available">Version %s ist verfügbar!</string>
+    <string name="settings_download_update">Update herunterladen</string>
+    <string name="settings_open_release">Release auf GitHub öffnen</string>
+    <string name="settings_update_failed">Update-Prüfung fehlgeschlagen: %s</string>
+
+    <!-- Extraction service notification -->
+    <string name="notification_channel_extract">Einsortieren</string>
+    <string name="notification_extract_title">Thor ROM Butler sortiert ein …</string>
+</resources>

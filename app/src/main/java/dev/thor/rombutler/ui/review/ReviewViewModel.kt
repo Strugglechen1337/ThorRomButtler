@@ -3,8 +3,10 @@ package dev.thor.rombutler.ui.review
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.thor.rombutler.domain.detection.RomFileGroup
 import dev.thor.rombutler.domain.detection.SystemRegistry
 import dev.thor.rombutler.domain.model.ArchiveType
+import dev.thor.rombutler.domain.model.DetectionResult
 import dev.thor.rombutler.domain.model.Confidence
 import dev.thor.rombutler.domain.model.DetectedRom
 import dev.thor.rombutler.domain.model.SystemDefinition
@@ -38,6 +40,12 @@ sealed interface RomSource {
 
     /** Loose files in the download folder; `memberEntryPaths` are absolute. */
     data object LooseFiles : RomSource
+
+    /**
+     * A whole archive assigned as one unit (arcade ROM sets must stay
+     * zipped). Moved unextracted; `memberEntryPaths` = [archive path].
+     */
+    data class WholeArchive(val archiveFileName: String) : RomSource
 }
 
 /**
@@ -136,16 +144,36 @@ class ReviewViewModel @Inject constructor(
 
     private fun loadFromSession() {
         val archiveItems = session.analyses.flatMap { analysis ->
-            analysis.roms.map { rom ->
-                ReviewItem(
-                    id = "${analysis.archive.path}::${rom.group.primary}",
-                    source = RomSource.ArchiveEntry(
-                        archivePath = analysis.archive.path,
-                        archiveType = analysis.archive.type,
-                        archiveFileName = analysis.archive.fileName,
+            if (analysis.roms.isEmpty()) {
+                // No detectable ROMs inside: offer the archive as ONE unit
+                // (arcade/Neo-Geo sets must stay zipped and are moved whole).
+                listOf(
+                    ReviewItem(
+                        id = "whole::${analysis.archive.path}",
+                        source = RomSource.WholeArchive(analysis.archive.fileName),
+                        rom = DetectedRom(
+                            group = RomFileGroup(
+                                primary = analysis.archive.fileName,
+                                members = listOf(analysis.archive.fileName),
+                            ),
+                            memberEntryPaths = listOf(analysis.archive.path),
+                            detection = DetectionResult.UNKNOWN,
+                            totalSizeBytes = analysis.archive.sizeBytes,
+                        ),
                     ),
-                    rom = rom,
                 )
+            } else {
+                analysis.roms.map { rom ->
+                    ReviewItem(
+                        id = "${analysis.archive.path}::${rom.group.primary}",
+                        source = RomSource.ArchiveEntry(
+                            archivePath = analysis.archive.path,
+                            archiveType = analysis.archive.type,
+                            archiveFileName = analysis.archive.fileName,
+                        ),
+                        rom = rom,
+                    )
+                }
             }
         }
         val looseItems = session.looseRoms.map { rom ->
@@ -312,7 +340,8 @@ class ReviewViewModel @Inject constructor(
                         is RomSource.ArchiveEntry ->
                             TaskSource.Archive(source.archivePath, source.archiveType)
 
-                        is RomSource.LooseFiles -> TaskSource.Loose
+                        // Loose files and whole archives are moved as files
+                        is RomSource.LooseFiles, is RomSource.WholeArchive -> TaskSource.Loose
                     },
                     entryPaths = item.rom.memberEntryPaths,
                     targetDir = targetDirFor(item, system),
