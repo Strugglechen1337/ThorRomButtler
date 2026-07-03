@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -109,14 +108,16 @@ fun FolderPickerDialog(
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
-                // Directory list
+                // Directory list. weight(fill=false) instead of a fixed
+                // height: on low landscape screens (AYN Thor!) the list
+                // shrinks so the action buttons below always stay visible.
                 val entries = remember(currentDir) {
                     currentDir?.listDirectories() ?: storageRoots()
                 }
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 200.dp, max = 380.dp),
+                        .weight(1f, fill = false),
                 ) {
                     if (entries.isEmpty()) {
                         item {
@@ -154,7 +155,17 @@ fun FolderPickerDialog(
                         onClick = { currentDir?.let { onSelect(it.absolutePath) } },
                         enabled = currentDir != null,
                     ) {
-                        Text(stringResource(R.string.picker_select_this_folder))
+                        // Name the folder so it is obvious WHAT gets picked
+                        val dir = currentDir
+                        Text(
+                            text = if (dir != null) {
+                                stringResource(R.string.picker_select_named_folder, dir.displayName())
+                            } else {
+                                stringResource(R.string.picker_select_this_folder)
+                            },
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
                     }
                 }
             }
@@ -190,6 +201,15 @@ private fun FolderRow(file: File, isRoot: Boolean, onClick: () -> Unit) {
         }
     }
 }
+
+/** Folder name for UI labels; the internal-storage root gets a real name. */
+@Composable
+private fun File.displayName(): String =
+    if (absolutePath == android.os.Environment.getExternalStorageDirectory().absolutePath) {
+        stringResource(R.string.picker_internal_storage)
+    } else {
+        name
+    }
 
 /** Sorted, readable subdirectories (hidden folders excluded). */
 private fun File.listDirectories(): List<File> =

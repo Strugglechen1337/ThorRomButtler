@@ -27,6 +27,7 @@
     <string name="picker_internal_storage">Interner Speicher</string>
     <string name="picker_empty">Keine Unterordner vorhanden.</string>
     <string name="picker_select_this_folder">Diesen Ordner verwenden</string>
+    <string name="picker_select_named_folder">„%s“ verwenden</string>
 
     <!-- Scan screen -->
     <string name="scan_title">Archive</string>
