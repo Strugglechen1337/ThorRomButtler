@@ -77,7 +77,8 @@ class LooseRomScanner @Inject constructor(
 
     /** Extension detection first; header read only when it could help. */
     private fun detectWithHeader(file: File): dev.thor.rombutler.domain.model.DetectionResult {
-        val byName = engine.detect(file.name)
+        val folderHint = file.parentFile?.name
+        val byName = engine.detect(file.name, folderHint = folderHint)
         if (byName.confidence == Confidence.CERTAIN) return byName
 
         val maxBytes = minOf(DetectionEngine.MAX_HEADER_BYTES.toLong(), file.length()).toInt()
@@ -88,7 +89,7 @@ class LooseRomScanner @Inject constructor(
         } catch (_: java.io.IOException) {
             return byName
         }
-        val byMagic = engine.detect(file.name, header)
+        val byMagic = engine.detect(file.name, header, folderHint)
         return if (byMagic.confidence.ordinal < byName.confidence.ordinal) byMagic else byName
     }
 

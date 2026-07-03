@@ -259,6 +259,42 @@ class DetectionEngineTest {
         assertThat(result.source).isEqualTo(MatchSource.MAGIC_BYTES)
     }
 
+    // --- folder-name hints ---
+
+    @Test
+    fun `folder hint resolves ambiguous extension to probable`() {
+        val cases = listOf(
+            Triple("Mystery Game.iso", "PS2", "ps2"),
+            Triple("Mystery Game.iso", "playstation 2", "ps2"),
+            Triple("Mystery Game.bin", "Saturn", "saturn"),
+            Triple("track01.bin", "PSX", "psx"),
+        )
+        for ((fileName, folder, expected) in cases) {
+            val result = engine.detect(fileName, folderHint = folder)
+            assertThat(result.system?.id).isEqualTo(expected)
+            assertThat(result.confidence).isEqualTo(Confidence.PROBABLE)
+            assertThat(result.source).isEqualTo(MatchSource.FOLDER_HINT)
+        }
+    }
+
+    @Test
+    fun `folder hint is ignored when the system does not claim the extension`() {
+        // .iso is not a SNES extension -> hint must not apply
+        val result = engine.detect("Mystery Game.iso", folderHint = "SNES")
+        assertThat(result.confidence).isEqualTo(Confidence.UNKNOWN)
+    }
+
+    @Test
+    fun `magic bytes beat the folder hint`() {
+        val header = ByteArray(0x40)
+        header[0x1C] = 0xC2.toByte(); header[0x1D] = 0x33
+        header[0x1E] = 0x9F.toByte(); header[0x1F] = 0x3D
+
+        val result = engine.detect("game.iso", header, folderHint = "PS2")
+        assertThat(result.system?.id).isEqualTo("gc")
+        assertThat(result.confidence).isEqualTo(Confidence.CERTAIN)
+    }
+
     // --- helper ---
 
     @Test

@@ -119,7 +119,10 @@ class CommonsArchiveAnalyzer @Inject constructor(
         source: ArchiveEntrySource,
         entry: ArchiveEntry,
     ): dev.thor.rombutler.domain.model.DetectionResult {
-        val byName = engine.detect(entry.path.entryFileName())
+        // Archive-internal folder name doubles as a hint ("SNES/game.bin")
+        val folderHint = entry.path.entryDirectory().substringAfterLast('/')
+            .takeIf { it.isNotEmpty() }
+        val byName = engine.detect(entry.path.entryFileName(), folderHint = folderHint)
         if (byName.confidence == Confidence.CERTAIN) return byName
 
         val maxBytes = minOf(
@@ -127,7 +130,7 @@ class CommonsArchiveAnalyzer @Inject constructor(
             entry.sizeBytes.takeIf { it > 0 } ?: DetectionEngine.MAX_HEADER_BYTES.toLong(),
         ).toInt()
         val header = source.readEntryPrefix(file, entry.path, maxBytes) ?: return byName
-        val byMagic = engine.detect(entry.path.entryFileName(), header)
+        val byMagic = engine.detect(entry.path.entryFileName(), header, folderHint)
 
         // Keep the better of the two (magic can only upgrade, not downgrade).
         return if (byMagic.confidence.ordinal < byName.confidence.ordinal) byMagic else byName

@@ -31,8 +31,16 @@ class DetectionEngine @Inject constructor(
      * @param fileName plain file name (path parts are ignored).
      * @param header optional first bytes of the (decompressed) file for
      *   magic-byte resolution; [MAX_HEADER_BYTES] bytes are enough.
+     * @param folderHint optional name of the folder containing the file
+     *   (archive subfolder or download subfolder). Used as a LAST resort:
+     *   an otherwise UNKNOWN file in an "SNES/" folder becomes PROBABLE —
+     *   but only when the hinted system actually claims the extension.
      */
-    fun detect(fileName: String, header: ByteArray? = null): DetectionResult {
+    fun detect(
+        fileName: String,
+        header: ByteArray? = null,
+        folderHint: String? = null,
+    ): DetectionResult {
         val extension = fileName.substringAfterLast('.', missingDelimiterValue = "")
             .lowercase()
         if (extension.isEmpty()) return DetectionResult.UNKNOWN
@@ -59,17 +67,31 @@ class DetectionEngine @Inject constructor(
         }
 
         // Extension-only fallback: only meaningful with a single claimant.
-        val single = candidates.singleOrNull() ?: return DetectionResult.UNKNOWN
-        val confidence = single.extensions.getValue(extension)
-        return if (confidence == Confidence.UNKNOWN) {
-            DetectionResult.UNKNOWN
-        } else {
-            DetectionResult(
-                system = single,
-                confidence = confidence,
-                source = MatchSource.EXTENSION,
-            )
+        val single = candidates.singleOrNull()
+        if (single != null) {
+            val confidence = single.extensions.getValue(extension)
+            if (confidence != Confidence.UNKNOWN) {
+                return DetectionResult(
+                    system = single,
+                    confidence = confidence,
+                    source = MatchSource.EXTENSION,
+                )
+            }
         }
+
+        // Last resort: the surrounding folder name. Only accepted when the
+        // hinted system is one of the extension's claimants.
+        if (folderHint != null) {
+            val hinted = registry.systemForFolderName(folderHint)
+            if (hinted != null && hinted in candidates) {
+                return DetectionResult(
+                    system = hinted,
+                    confidence = Confidence.PROBABLE,
+                    source = MatchSource.FOLDER_HINT,
+                )
+            }
+        }
+        return DetectionResult.UNKNOWN
     }
 
     /** True when [fileName] has an extension any system claims. */

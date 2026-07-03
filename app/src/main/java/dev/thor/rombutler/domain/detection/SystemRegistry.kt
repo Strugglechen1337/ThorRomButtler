@@ -367,6 +367,45 @@ class SystemRegistry @Inject constructor() {
         systems.flatMap { it.extensions.keys }.toSet()
     }
 
+    /**
+     * Folder-name aliases -> system id, for the folder-hint heuristic
+     * (an ambiguous file inside an "SNES/" folder is probably SNES).
+     * Keys are normalized: lowercase, no spaces/dashes/underscores.
+     */
+    private val folderAliases: Map<String, String> = buildMap {
+        // Every system folder + id is an alias for itself
+        for (system in systems) {
+            put(system.esdeFolder.lowercase(), system.id)
+            put(system.id.lowercase(), system.id)
+        }
+        // Common colloquial folder names
+        put("supernintendo", "snes"); put("famicom", "nes")
+        put("gameboy", "gb"); put("gameboycolor", "gbc"); put("gameboyadvance", "gba")
+        put("nintendo64", "n64"); put("nintendods", "nds"); put("ds", "nds")
+        put("3ds", "n3ds"); put("nintendo3ds", "n3ds")
+        put("ps1", "psx"); put("psone", "psx"); put("playstation", "psx")
+        put("playstation1", "psx"); put("playstation2", "ps2")
+        put("gamecube", "gc"); put("ngc", "gc")
+        put("dc", "dreamcast"); put("nsw", "switch"); put("nintendoswitch", "switch")
+        put("commodore64", "c64"); put("commodoreamiga", "amiga")
+        put("genesis", "megadrive"); put("md", "megadrive"); put("segamegadrive", "megadrive")
+        put("sms", "mastersystem"); put("segamastersystem", "mastersystem")
+        put("gg", "gamegear"); put("segagamegear", "gamegear")
+        put("segasaturn", "saturn"); put("32x", "sega32x")
+        put("2600", "atari2600"); put("7800", "atari7800"); put("lynx", "atarilynx")
+        put("turbografx", "pcengine"); put("turbografx16", "pcengine")
+        put("tg16", "pcengine"); put("pce", "pcengine")
+        put("ws", "wonderswan"); put("wsc", "wonderswancolor")
+        put("mame", "arcade")
+    }
+
+    /** System hinted at by a folder name, or `null`. */
+    fun systemForFolderName(folderName: String): SystemDefinition? {
+        val normalized = folderName.lowercase()
+            .replace(" ", "").replace("-", "").replace("_", "")
+        return folderAliases[normalized]?.let(::byId)
+    }
+
     /** Systems that claim [extension] (lowercase, no dot). */
     fun systemsForExtension(extension: String): List<SystemDefinition> =
         systems.filter { extension in it.extensions }

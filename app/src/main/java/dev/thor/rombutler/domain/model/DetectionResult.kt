@@ -10,6 +10,9 @@ enum class MatchSource {
     /** Verified magic bytes in the file header. */
     MAGIC_BYTES,
 
+    /** Folder name hinted at the system (e.g. an "SNES/" dir in the archive). */
+    FOLDER_HINT,
+
     /** Nothing matched. */
     NONE,
 }
