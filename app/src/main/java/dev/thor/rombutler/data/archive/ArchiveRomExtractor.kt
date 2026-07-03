@@ -48,10 +48,10 @@ class ArchiveRomExtractor @Inject constructor(
 
             try {
                 sourceFactory.forType(archiveType).extractEntries(archiveFile, targets, onBytesWritten)
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 // No half-extracted groups: remove everything from this run
                 targets.values.forEach { it.delete() }
-                throw e
+                throw e.toUserFacingExtractionError()
             }
             targets.values.map { it.absolutePath }
         }
@@ -151,6 +151,21 @@ class ArchiveRomExtractor @Inject constructor(
             throw e
         }
     }
+
+    private fun Throwable.toUserFacingExtractionError(): Throwable =
+        when (this) {
+            is OutOfMemoryError -> IOException(
+                "Zu wenig Arbeitsspeicher beim Entpacken. Das Archiv nutzt vermutlich eine sehr große 7z/LZMA2-Kompression. Bitte mit der neuen Version erneut versuchen oder das Archiv am PC als ZIP/7z mit kleinerem Dictionary neu packen.",
+                this,
+            )
+
+            is org.apache.commons.compress.MemoryLimitException -> IOException(
+                "7z-Archiv benötigt zu viel Arbeitsspeicher (${memoryNeededInKb / 1024} MB). Bitte am PC mit kleinerem Dictionary neu packen.",
+                this,
+            )
+
+            else -> this
+        }
 
     companion object {
         private const val MB = 1024L * 1024
