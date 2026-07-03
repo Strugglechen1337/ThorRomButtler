@@ -7,12 +7,14 @@ import dagger.hilt.components.SingletonComponent
 import dev.thor.rombutler.data.archive.ArchiveRomExtractor
 import dev.thor.rombutler.data.archive.CommonsArchiveAnalyzer
 import dev.thor.rombutler.data.files.FileArchiveScanner
+import dev.thor.rombutler.data.files.LibraryChecker
 import dev.thor.rombutler.data.files.LooseRomScanner
 import dev.thor.rombutler.data.files.RomFolderManager
 import dev.thor.rombutler.data.log.FileLogRepository
 import dev.thor.rombutler.data.settings.SettingsDataStore
 import dev.thor.rombutler.domain.repository.ArchiveAnalyzer
 import dev.thor.rombutler.domain.repository.ArchiveRepository
+import dev.thor.rombutler.domain.repository.LibraryRepository
 import dev.thor.rombutler.domain.repository.LogRepository
 import dev.thor.rombutler.domain.repository.LooseRomRepository
 import dev.thor.rombutler.domain.repository.RomExtractor
@@ -54,4 +56,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindLooseRomRepository(impl: LooseRomScanner): LooseRomRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindLibraryRepository(impl: LibraryChecker): LibraryRepository
 }

@@ -39,7 +39,7 @@
     <string name="scan_refresh">Rescan</string>
     <string name="scan_open_setup">Open setup</string>
     <string name="scan_in_progress">Scanning download folder …</string>
-    <string name="scan_empty_title">No archives found</string>
+    <string name="scan_empty_title">All tidied up.</string>
     <string name="scan_empty_hint">No archives (ZIP, 7z, RAR) and no loose ROM files in the download folder.</string>
     <string name="scan_found_count">%d found</string>
     <string name="scan_loose_title">Loose ROM files (%d)</string>
@@ -119,6 +119,13 @@
     <string name="settings_folder_override_label">Folder name</string>
     <string name="settings_folder_override_default">Default (ES-DE): %s</string>
     <string name="settings_folder_override_reset">Default</string>
+    <string name="settings_watcher">Watcher mode</string>
+    <string name="settings_watcher_hint">Checks the download folder in the background roughly every 30 minutes and notifies you about new finds. Sorting still only happens after your confirmation.</string>
+    <string name="settings_library_title">Library</string>
+    <string name="settings_library_check">Check library</string>
+    <string name="settings_library_summary">%1$d ROMs · %2$s</string>
+    <string name="settings_library_misplaced">Review %d misplaced ROMs</string>
+    <string name="settings_library_all_good">Everything sorted correctly. 🧹</string>
     <string name="settings_battery_hint">Aggressive battery optimization can interrupt very long sorting runs. If that happens, exempt the app from optimization:</string>
     <string name="settings_battery_button">Open battery optimization</string>
     <string name="settings_crash_title">Crash report available</string>
@@ -138,4 +145,10 @@
     <!-- Extraction service notification -->
     <string name="notification_channel_extract">Sorting</string>
     <string name="notification_extract_title">Thor ROM Butler is sorting …</string>
+    <string name="notification_channel_watcher">Watcher mode</string>
+    <string name="notification_watcher_title">New ROMs found</string>
+    <plurals name="notification_watcher_text">
+        <item quantity="one">1 new find in the download folder – tap to sort</item>
+        <item quantity="other">%d new finds in the download folder – tap to sort</item>
+    </plurals>
 </resources>

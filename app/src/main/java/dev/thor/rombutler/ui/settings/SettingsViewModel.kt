@@ -12,6 +12,10 @@ import dev.thor.rombutler.data.log.CrashLog
 import dev.thor.rombutler.data.update.GitHubUpdateChecker
 import dev.thor.rombutler.data.update.UpdateInfo
 import dev.thor.rombutler.domain.detection.SystemRegistry
+import dev.thor.rombutler.domain.repository.LibraryReport
+import dev.thor.rombutler.domain.repository.LibraryRepository
+import dev.thor.rombutler.ui.review.ReviewSession
+import dev.thor.rombutler.watcher.WatcherScheduler
 import dev.thor.rombutler.domain.model.AppSettings
 import dev.thor.rombutler.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,14 +34,28 @@ sealed interface UpdateCheckState {
     data class Failed(val message: String) : UpdateCheckState
 }
 
+/** State of the on-demand library check. */
+sealed interface LibraryCheckState {
+    data object Idle : LibraryCheckState
+    data object Running : LibraryCheckState
+    data class Done(val report: LibraryReport) : LibraryCheckState
+    data class Failed(val message: String) : LibraryCheckState
+}
+
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val settingsRepository: SettingsRepository,
     private val updateChecker: GitHubUpdateChecker,
     private val crashLog: CrashLog,
+    private val watcherScheduler: WatcherScheduler,
+    private val libraryRepository: LibraryRepository,
+    private val reviewSession: ReviewSession,
     val registry: SystemRegistry,
 ) : ViewModel() {
+
+    private val _libraryState = MutableStateFlow<LibraryCheckState>(LibraryCheckState.Idle)
+    val libraryState: StateFlow<LibraryCheckState> = _libraryState.asStateFlow()
 
     /** True when a crash was recorded — shows the share row in settings. */
     val hasCrashReport: Boolean = crashLog.exists()
@@ -76,6 +94,34 @@ class SettingsViewModel @Inject constructor(
 
     fun setAutoUpdateCheck(enabled: Boolean) {
         viewModelScope.launch { settingsRepository.setAutoUpdateCheck(enabled) }
+    }
+
+    fun setWatcherEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setWatcherEnabled(enabled)
+            watcherScheduler.setEnabled(enabled)
+        }
+    }
+
+    /** Scans the ROM library: per-system statistics + misplaced ROMs. */
+    fun checkLibrary() {
+        if (_libraryState.value == LibraryCheckState.Running) return
+        _libraryState.value = LibraryCheckState.Running
+        viewModelScope.launch {
+            _libraryState.value = runCatching { libraryRepository.check() }
+                .fold(
+                    onSuccess = { LibraryCheckState.Done(it) },
+                    onFailure = { LibraryCheckState.Failed(it.message ?: "?") },
+                )
+        }
+    }
+
+    /** Hands the misplaced ROMs to the review flow. */
+    fun prepareMisplacedReview(report: LibraryReport): Boolean {
+        if (report.misplaced.isEmpty()) return false
+        reviewSession.analyses = emptyList()
+        reviewSession.looseRoms = report.misplaced
+        return true
     }
 
     /** Blank/empty restores the ES-DE default for that system. */

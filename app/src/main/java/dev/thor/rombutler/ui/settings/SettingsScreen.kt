@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.SystemUpdate
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -57,10 +58,12 @@ import dev.thor.rombutler.ui.components.FolderPickerDialog
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onOpenReview: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val updateState by viewModel.updateState.collectAsStateWithLifecycle()
+    val libraryState by viewModel.libraryState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     var showDownloadPicker by remember { mutableStateOf(false) }
@@ -151,6 +154,123 @@ fun SettingsScreen(
                         checked = settings.autoUpdateCheck,
                         onCheckedChange = viewModel::setAutoUpdateCheck,
                     )
+                }
+                Spacer(Modifier.size(14.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.settings_watcher),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            text = stringResource(R.string.settings_watcher_hint),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Switch(
+                        checked = settings.watcherEnabled,
+                        onCheckedChange = viewModel::setWatcherEnabled,
+                    )
+                }
+            }
+
+            // Library check: statistics + misplaced ROMs
+            SettingsCard {
+                Text(
+                    text = stringResource(R.string.settings_library_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(Modifier.size(10.dp))
+                when (val lib = libraryState) {
+                    LibraryCheckState.Idle -> OutlinedButton(
+                        onClick = viewModel::checkLibrary,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { Text(stringResource(R.string.settings_library_check)) }
+
+                    LibraryCheckState.Running -> Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(22.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+
+                    is LibraryCheckState.Failed -> Column {
+                        Text(
+                            text = lib.message,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                        Spacer(Modifier.size(8.dp))
+                        OutlinedButton(
+                            onClick = viewModel::checkLibrary,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) { Text(stringResource(R.string.settings_library_check)) }
+                    }
+
+                    is LibraryCheckState.Done -> Column {
+                        val report = lib.report
+                        Text(
+                            text = stringResource(
+                                R.string.settings_library_summary,
+                                report.totalRoms,
+                                dev.thor.rombutler.ui.components.formatFileSize(report.totalBytes),
+                            ),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Spacer(Modifier.size(6.dp))
+                        for (stat in report.stats.take(5)) {
+                            Row {
+                                Text(
+                                    text = stat.displayName,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                Text(
+                                    text = "${stat.romCount} · " +
+                                        dev.thor.rombutler.ui.components.formatFileSize(stat.totalBytes),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                            }
+                        }
+                        Spacer(Modifier.size(10.dp))
+                        if (report.misplaced.isNotEmpty()) {
+                            Button(
+                                onClick = {
+                                    if (viewModel.prepareMisplacedReview(report)) onOpenReview()
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Text(
+                                    stringResource(
+                                        R.string.settings_library_misplaced,
+                                        report.misplaced.size,
+                                    ),
+                                )
+                            }
+                        } else {
+                            Text(
+                                text = stringResource(R.string.settings_library_all_good),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.secondary,
+                            )
+                        }
+                        Spacer(Modifier.size(6.dp))
+                        OutlinedButton(
+                            onClick = viewModel::checkLibrary,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) { Text(stringResource(R.string.settings_library_check)) }
+                    }
                 }
             }
 

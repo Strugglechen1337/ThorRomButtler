@@ -38,7 +38,7 @@
     <string name="scan_refresh">Neu scannen</string>
     <string name="scan_open_setup">Einrichtung öffnen</string>
     <string name="scan_in_progress">Durchsuche Download-Ordner …</string>
-    <string name="scan_empty_title">Keine Archive gefunden</string>
+    <string name="scan_empty_title">Alles aufgeräumt.</string>
     <string name="scan_empty_hint">Im Download-Ordner liegen keine Archive (ZIP, 7z, RAR) und keine losen ROM-Dateien.</string>
     <string name="scan_found_count">%d Funde</string>
     <string name="scan_loose_title">Lose ROM-Dateien (%d)</string>
@@ -118,6 +118,13 @@
     <string name="settings_folder_override_label">Ordnername</string>
     <string name="settings_folder_override_default">Standard (ES-DE): %s</string>
     <string name="settings_folder_override_reset">Standard</string>
+    <string name="settings_watcher">Wächter-Modus</string>
+    <string name="settings_watcher_hint">Prüft ca. alle 30 Minuten im Hintergrund den Download-Ordner und benachrichtigt bei neuen Funden. Einsortiert wird weiterhin nur nach deiner Bestätigung.</string>
+    <string name="settings_library_title">Bibliothek</string>
+    <string name="settings_library_check">Bibliothek prüfen</string>
+    <string name="settings_library_summary">%1$d ROMs · %2$s</string>
+    <string name="settings_library_misplaced">%d falsch einsortierte ROMs prüfen</string>
+    <string name="settings_library_all_good">Alles korrekt einsortiert. 🧹</string>
     <string name="settings_battery_hint">Bei sehr langen Einsortier-Läufen kann aggressive Akku-Optimierung den Vorgang unterbrechen. Bei Problemen die App von der Optimierung ausnehmen:</string>
     <string name="settings_battery_button">Akku-Optimierung öffnen</string>
     <string name="settings_crash_title">Absturzbericht vorhanden</string>
@@ -137,4 +144,10 @@
     <!-- Extraction service notification -->
     <string name="notification_channel_extract">Einsortieren</string>
     <string name="notification_extract_title">Thor ROM Butler sortiert ein …</string>
+    <string name="notification_channel_watcher">Wächter-Modus</string>
+    <string name="notification_watcher_title">Neue ROMs gefunden</string>
+    <plurals name="notification_watcher_text">
+        <item quantity="one">1 neuer Fund im Download-Ordner – antippen zum Einsortieren</item>
+        <item quantity="other">%d neue Funde im Download-Ordner – antippen zum Einsortieren</item>
+    </plurals>
 </resources>

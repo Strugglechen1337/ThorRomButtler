@@ -25,6 +25,7 @@ class SettingsDataStore @Inject constructor(
         val DOWNLOAD_PATH = stringPreferencesKey("download_path")
         val DELETE_ARCHIVES = booleanPreferencesKey("delete_archives_after_extract")
         val AUTO_UPDATE_CHECK = booleanPreferencesKey("auto_update_check")
+        val WATCHER_ENABLED = booleanPreferencesKey("watcher_enabled")
         val FOLDER_OVERRIDES = stringPreferencesKey("folder_overrides") // JSON object
     }
 
@@ -34,6 +35,7 @@ class SettingsDataStore @Inject constructor(
             downloadPath = prefs[Keys.DOWNLOAD_PATH],
             deleteArchivesAfterExtract = prefs[Keys.DELETE_ARCHIVES] ?: true,
             autoUpdateCheck = prefs[Keys.AUTO_UPDATE_CHECK] ?: false,
+            watcherEnabled = prefs[Keys.WATCHER_ENABLED] ?: false,
             folderOverrides = prefs[Keys.FOLDER_OVERRIDES].parseOverrides(),
         )
     }
@@ -52,6 +54,10 @@ class SettingsDataStore @Inject constructor(
 
     override suspend fun setAutoUpdateCheck(enabled: Boolean) {
         dataStore.edit { it[Keys.AUTO_UPDATE_CHECK] = enabled }
+    }
+
+    override suspend fun setWatcherEnabled(enabled: Boolean) {
+        dataStore.edit { it[Keys.WATCHER_ENABLED] = enabled }
     }
 
     override suspend fun setFolderOverride(systemId: String, folder: String?) {

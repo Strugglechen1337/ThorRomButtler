@@ -67,6 +67,7 @@ fun AppNavHost(
         composable(Routes.SETTINGS) {
             SettingsScreen(
                 onBack = { navController.popBackStack() },
+                onOpenReview = { navController.navigate(Routes.REVIEW) },
             )
         }
         composable(Routes.REVIEW) {

@@ -18,6 +18,8 @@ data class AppSettings(
     val deleteArchivesAfterExtract: Boolean = true,
     /** Opt-in: query GitHub for a newer release on app start (default OFF). */
     val autoUpdateCheck: Boolean = false,
+    /** Opt-in: periodic background scan of the download folder (default OFF). */
+    val watcherEnabled: Boolean = false,
     /**
      * Per-system folder overrides (systemId -> folder name) for users whose
      * frontend does not follow the ES-DE convention (e.g. `roms/ps1`).

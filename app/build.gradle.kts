@@ -26,8 +26,8 @@ android {
         applicationId = "dev.thor.rombutler"
         minSdk = 33
         targetSdk = 37
-        versionCode = 7
-        versionName = "0.6.0"
+        versionCode = 8
+        versionName = "0.7.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -94,6 +94,11 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     // Dagger-generated service components reference @CanIgnoreReturnValue
     compileOnly(libs.errorprone.annotations)
+
+    // Watcher mode: periodic background scan
+    implementation(libs.androidx.work.runtime)
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
 
     implementation(libs.commons.compress)
     implementation(libs.xz)

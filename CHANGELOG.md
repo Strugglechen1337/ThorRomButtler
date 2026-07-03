@@ -2,6 +2,15 @@
 
 All notable user-facing changes are documented here.
 
+## 0.7.0
+
+- Added optional watcher mode: periodic background check of the download
+  folder with a notification for new finds (sorting still needs your
+  confirmation).
+- Added library check: per-system statistics plus detection of misplaced
+  ROMs, which can be re-sorted through the normal review flow.
+- Butler-flavored empty state and SD-card FAQ in the README.
+
 ## 0.6.0
 
 - Added undo for sorted ROMs directly from the log (extracted files are

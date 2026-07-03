@@ -24,6 +24,9 @@ interface SettingsRepository {
     /** Persists the opt-in automatic update check on app start. */
     suspend fun setAutoUpdateCheck(enabled: Boolean)
 
+    /** Persists the opt-in background watcher mode. */
+    suspend fun setWatcherEnabled(enabled: Boolean)
+
     /**
      * Overrides the target folder name for one system; `null` or blank
      * restores the ES-DE default.

@@ -46,6 +46,11 @@ läuft aber auf jedem Android-Smartphone ab Android 13.
 - 🕹️ **Arcade-Sets bleiben gepackt**: MAME-/Neo-Geo-ZIPs werden als Ganzes
   nach `roms/arcade` bzw. `roms/neogeo` verschoben
 - 🗂️ **ES-DE-Ordnerkonvention**: `roms/nes`, `roms/psx`, `roms/dreamcast/<Spiel>/`, ...
+- 👁️ **Wächter-Modus** (optional): prüft den Download-Ordner im Hintergrund
+  und benachrichtigt bei neuen Funden — einsortiert wird weiterhin nur nach
+  deiner Bestätigung
+- 🧹 **Bibliotheks-Prüfung**: Statistik pro System und Erkennung falsch
+  einsortierter ROMs (z. B. eine `.gba` in `roms/psx`)
 - 🔄 **Update-Check & In-App-Download** direkt aus den Einstellungen
 - 📜 **Aktions-Log mit Rückgängig**: jede Bewegung wird protokolliert und
   lässt sich direkt aus dem Log zurücknehmen
@@ -82,6 +87,13 @@ Für sehr große ROMs ist **ZIP** am zuverlässigsten. **7z/LZMA2** funktioniert
 kann aber je nach Dictionary-Größe viel RAM brauchen. Wenn ein 7z-Archiv trotz
 `largeHeap` scheitert, bitte am PC als ZIP oder als 7z mit kleinerem Dictionary
 (z. B. 32 MB oder 64 MB) neu packen.
+
+### SD-Karte
+
+Download-Ordner und ROM-Ordner dürfen auf unterschiedlichen Speichern liegen —
+z. B. Downloads intern, ES-DE-Struktur auf der SD-Karte. Der Ordner-Picker
+zeigt alle Speicherorte an, und beim Einsortieren über Speichergrenzen hinweg
+kopiert die App verifiziert und löscht erst danach die Quelle.
 
 ### Berechtigungen
 
@@ -162,6 +174,11 @@ newer.
 - 🕹️ **Arcade sets stay packed**: MAME and Neo Geo ZIPs are moved as complete
   sets to `roms/arcade` or `roms/neogeo`
 - 🗂️ **ES-DE folder convention**: `roms/nes`, `roms/psx`, `roms/dreamcast/<game>/`, ...
+- 👁️ **Watcher mode** (optional): checks the download folder in the
+  background and notifies you about new finds — sorting still only happens
+  after your confirmation
+- 🧹 **Library check**: per-system statistics and detection of misplaced
+  ROMs (e.g. a `.gba` inside `roms/psx`)
 - 🔄 **Update check & in-app download** directly from Settings
 - 📜 **Action log with undo**: every move is recorded and can be reverted
   right from the log
@@ -198,6 +215,13 @@ For very large ROMs, **ZIP** is the safest option. **7z/LZMA2** works, but can
 require a lot of RAM depending on dictionary size. If a 7z archive still fails
 despite `largeHeap`, repack it on a PC as ZIP or as 7z with a smaller dictionary
 (for example 32 MB or 64 MB).
+
+### SD Card
+
+The download folder and the ROM folder can live on different storages —
+e.g. downloads on internal storage, your ES-DE structure on the SD card.
+The folder picker shows all storage locations, and cross-storage sorting
+uses a verified copy before the source is deleted.
 
 ### Permissions
 
