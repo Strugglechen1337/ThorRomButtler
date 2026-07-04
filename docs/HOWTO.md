@@ -35,6 +35,11 @@ die Dateien landen im gewählten Download-Ordner. Gepackt (ZIP, 7z, RAR4) oder
 ungepackt, beides funktioniert. Weitere Quellordner kannst du in den
 Einstellungen ergänzen.
 
+**Am bequemsten: LAN-Empfang.** In den Einstellungen „Empfang starten",
+die angezeigte Adresse am PC im Browser öffnen (gleiches WLAN) und die
+Dateien einfach auf die Seite ziehen — ganz ohne Kabel. Alternativ kannst
+du Dateien aus anderen Apps per „Teilen → Thor ROM Butler" schicken.
+
 ### Schritt 3: Scannen
 
 Die App durchsucht den Ordner und analysiert jeden Fund — bei Archiven
@@ -77,6 +82,13 @@ anders überlegst.
 - **Arcade/MAME-Sets** bleiben gepackt und werden als Ganzes verschoben.
 - **Eigene Ordnernamen** (z. B. `ps1` statt `psx`): Einstellungen →
   „Systemordner anpassen".
+- **Gamepad**: D-Pad/Stick navigiert, A bestätigt, B geht zurück —
+  Touch funktioniert parallel weiter.
+- **Dump-Verifizierung**: Ordner mit No-Intro/Redump-`.dat`-Dateien in den
+  Einstellungen wählen — einsortierte ROMs werden per Prüfsumme
+  verifiziert (Ergebnis im Log).
+- **Farbwelten**: Thor (blau), Odin (violett) und CRT (grün) in den
+  Einstellungen.
 - **Updates**: Einstellungen → „Auf Updates prüfen", oder via
   [Obtainium](https://github.com/ImranR98/Obtainium).
 
@@ -116,6 +128,11 @@ Any way you like: browser download, copied from a PC over USB, Telegram, … —
 as long as the files end up in your chosen download folder. Zipped (ZIP, 7z,
 RAR4) or loose, both work. Additional source folders can be added in the
 settings.
+
+**Most convenient: LAN receive.** Tap "Start receiving" in Settings, open
+the shown address in a browser on your PC (same Wi-Fi) and simply drop the
+files onto the page — no cable at all. Alternatively, send files from other
+apps via "Share → Thor ROM Butler".
 
 ### Step 3: Scan
 
@@ -158,6 +175,11 @@ your mind.
 - **Arcade/MAME sets** stay zipped and are moved as a whole.
 - **Custom folder names** (e.g. `ps1` instead of `psx`): Settings →
   "Customize system folders".
+- **Gamepad**: D-pad/stick navigates, A confirms, B goes back — touch
+  keeps working alongside.
+- **Dump verification**: pick a folder with No-Intro/Redump `.dat` files in
+  Settings — sorted ROMs are verified by checksum (result in the log).
+- **Color themes**: Thor (blue), Odin (violet) and CRT (green) in Settings.
 - **Updates**: Settings → "Check for updates", or via
   [Obtainium](https://github.com/ImranR98/Obtainium).
 
