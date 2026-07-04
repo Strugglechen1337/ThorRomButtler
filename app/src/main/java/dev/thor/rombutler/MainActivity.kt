@@ -37,7 +37,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         handleShareIntent(intent)
         setContent {
-            ThorRomButlerTheme {
+            val themeId by viewModel.themeId.collectAsStateWithLifecycle()
+            ThorRomButlerTheme(themeId = themeId) {
                 val startDestination by viewModel.startDestination.collectAsStateWithLifecycle()
                 // Wait for DataStore before building the graph — avoids a
                 // visible flash from Setup to Scan on configured devices.

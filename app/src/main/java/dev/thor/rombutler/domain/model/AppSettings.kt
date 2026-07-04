@@ -35,6 +35,8 @@ data class AppSettings(
     val folderOverrides: Map<String, String> = emptyMap(),
     /** Folder containing No-Intro/Redump `.dat` files for verification. */
     val datFolderPath: String? = null,
+    /** Color theme id: "thor" (default), "odin", "crt". */
+    val themeId: String = "thor",
 ) {
     /** Setup is complete once both folders are configured. */
     val isSetupComplete: Boolean

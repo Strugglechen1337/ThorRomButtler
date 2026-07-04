@@ -47,6 +47,11 @@ class MainViewModel @Inject constructor(
             initialValue = null,
         )
 
+    /** Active color theme id (thor/odin/crt). */
+    val themeId: StateFlow<String> = settingsRepository.settings
+        .map { it.themeId }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), "thor")
+
     /** Version name to show a one-time what's-new dialog for, or null. */
     val whatsNewVersion = MutableStateFlow<String?>(null)
 

@@ -115,6 +115,10 @@ class SettingsViewModel @Inject constructor(
 
     fun stopReceive() = receiveManager.stop()
 
+    fun setThemeId(themeId: String) {
+        viewModelScope.launch { settingsRepository.setThemeId(themeId) }
+    }
+
     fun setDatFolderPath(path: String?) {
         viewModelScope.launch { settingsRepository.setDatFolderPath(path) }
     }

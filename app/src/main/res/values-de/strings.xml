@@ -170,6 +170,7 @@
     <string name="settings_support_button">Kaffee ausgeben</string>
 
     <!-- LAN receive mode -->
+    <string name="settings_theme">Farbwelt</string>
     <string name="receive_title">LAN-Empfang</string>
     <string name="receive_hint">ROMs direkt vom PC schicken: Empfang starten, die angezeigte Adresse am PC im Browser öffnen und Dateien hineinziehen. Sie landen im Download-Ordner.</string>
     <string name="receive_running_hint">Am PC im Browser öffnen (gleiches WLAN):</string>

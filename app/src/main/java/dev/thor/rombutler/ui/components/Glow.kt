@@ -9,19 +9,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import dev.thor.rombutler.ui.theme.ThorGlowBlue
-import dev.thor.rombutler.ui.theme.ThorGlowGold
-
 /**
- * Subtle neon glow for cards and buttons — the Thor look. Implemented as a
- * colored shadow, so it stays cheap (no offscreen blur passes).
+ * Subtle neon glow for cards and buttons. Implemented as a colored
+ * shadow, so it stays cheap (no offscreen blur passes). Follows the
+ * active theme's primary color (Thor blue, Odin violet, CRT green).
  *
- * @param color glow color (defaults to neon blue).
  * @param elevation glow spread; keep small for "dezent".
  */
 @Composable
 fun Modifier.neonGlow(
-    color: Color = ThorGlowBlue,
+    color: Color = MaterialTheme.colorScheme.primary,
     elevation: Dp = 8.dp,
     shape: Shape = MaterialTheme.shapes.medium,
 ): Modifier = shadow(
@@ -31,9 +28,13 @@ fun Modifier.neonGlow(
     spotColor = color,
 )
 
-/** Gold variant for primary call-to-action elements. */
+/** Accent variant for primary call-to-action elements (theme secondary). */
 @Composable
 fun Modifier.goldGlow(
     elevation: Dp = 10.dp,
     shape: Shape = RoundedCornerShape(26.dp),
-): Modifier = neonGlow(color = ThorGlowGold, elevation = elevation, shape = shape)
+): Modifier = neonGlow(
+    color = MaterialTheme.colorScheme.secondary,
+    elevation = elevation,
+    shape = shape,
+)

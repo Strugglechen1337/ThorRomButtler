@@ -39,6 +39,9 @@ interface SettingsRepository {
     /** Persists the folder containing `.dat` files (null/blank = disable). */
     suspend fun setDatFolderPath(path: String?)
 
+    /** Persists the color theme id ("thor", "odin", "crt"). */
+    suspend fun setThemeId(themeId: String)
+
     /** Version code whose what's-new dialog was already shown (0 = never). */
     suspend fun lastSeenVersionCode(): Int
 

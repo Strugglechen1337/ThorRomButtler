@@ -33,6 +33,7 @@ class SettingsDataStore @Inject constructor(
         val TRASH_MODE = booleanPreferencesKey("trash_instead_of_delete")
         val LAST_SEEN_VERSION = intPreferencesKey("last_seen_version_code")
         val DAT_FOLDER = stringPreferencesKey("dat_folder_path")
+        val THEME_ID = stringPreferencesKey("theme_id")
     }
 
     override val settings: Flow<AppSettings> = dataStore.data.map { prefs ->
@@ -46,6 +47,7 @@ class SettingsDataStore @Inject constructor(
             additionalSourcePaths = prefs[Keys.EXTRA_SOURCES].parseStringList(),
             trashInsteadOfDelete = prefs[Keys.TRASH_MODE] ?: false,
             datFolderPath = prefs[Keys.DAT_FOLDER],
+            themeId = prefs[Keys.THEME_ID] ?: "thor",
         )
     }
 
@@ -93,6 +95,10 @@ class SettingsDataStore @Inject constructor(
         dataStore.edit { prefs ->
             if (path.isNullOrBlank()) prefs.remove(Keys.DAT_FOLDER) else prefs[Keys.DAT_FOLDER] = path
         }
+    }
+
+    override suspend fun setThemeId(themeId: String) {
+        dataStore.edit { it[Keys.THEME_ID] = themeId }
     }
 
     override suspend fun lastSeenVersionCode(): Int =

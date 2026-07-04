@@ -318,6 +318,40 @@ fun SettingsScreen(
                 }
             }
 
+            // Color theme
+            SettingsCard {
+                Text(
+                    text = stringResource(R.string.settings_theme),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(Modifier.size(10.dp))
+                Row {
+                    for (theme in dev.thor.rombutler.ui.theme.AppThemes.ALL) {
+                        val selected = settings.themeId == theme
+                        val label = when (theme) {
+                            dev.thor.rombutler.ui.theme.AppThemes.ODIN -> "Odin"
+                            dev.thor.rombutler.ui.theme.AppThemes.CRT -> "CRT"
+                            else -> "Thor"
+                        }
+                        if (selected) {
+                            Button(
+                                onClick = {},
+                                modifier = Modifier.weight(1f),
+                            ) { Text(label) }
+                        } else {
+                            OutlinedButton(
+                                onClick = { viewModel.setThemeId(theme) },
+                                modifier = Modifier.weight(1f),
+                            ) { Text(label) }
+                        }
+                        if (theme != dev.thor.rombutler.ui.theme.AppThemes.ALL.last()) {
+                            Spacer(Modifier.width(8.dp))
+                        }
+                    }
+                }
+            }
+
             // LAN receive mode
             SettingsCard {
                 Text(

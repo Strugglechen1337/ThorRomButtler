@@ -171,6 +171,7 @@
     <string name="settings_support_button">Buy me a coffee</string>
 
     <!-- LAN receive mode -->
+    <string name="settings_theme">Color theme</string>
     <string name="receive_title">LAN receive</string>
     <string name="receive_hint">Send ROMs straight from your PC: start receiving, open the shown address in a browser on the PC and drop files in. They land in the download folder.</string>
     <string name="receive_running_hint">Open in a browser on your PC (same Wi-Fi):</string>
