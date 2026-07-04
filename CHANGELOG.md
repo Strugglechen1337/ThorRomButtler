@@ -2,6 +2,14 @@
 
 All notable user-facing changes are documented here.
 
+## 0.9.0
+
+- Added DAT verification: sorted ROMs are checked by CRC32 against
+  user-provided No-Intro/Redump .dat files (Settings → DAT folder); the
+  verdict is recorded in the log.
+- Added a 1G1R duplicate overview to the library check: same titles in
+  multiple regions/revisions are listed (details in the collection export).
+
 ## 0.8.1
 
 - Storage preflight now warns in red and blocks sorting when space is

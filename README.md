@@ -51,8 +51,10 @@ läuft aber auf jedem Android-Smartphone ab Android 13.
 - 👁️ **Wächter-Modus** (optional): prüft den Download-Ordner im Hintergrund
   und benachrichtigt bei neuen Funden — einsortiert wird weiterhin nur nach
   deiner Bestätigung
-- 🧹 **Bibliotheks-Prüfung**: Statistik pro System und Erkennung falsch
-  einsortierter ROMs (z. B. eine `.gba` in `roms/psx`)
+- 🧹 **Bibliotheks-Prüfung**: Statistik pro System, Erkennung falsch
+  einsortierter ROMs und Duplikat-Übersicht (Regionen/Revisionen)
+- 🏅 **DAT-Verifizierung** (optional): einsortierte ROMs per Prüfsumme
+  gegen No-Intro/Redump-DAT-Dateien verifizieren
 - 🔄 **Update-Check & In-App-Download** direkt aus den Einstellungen
 - 📜 **Aktions-Log mit Rückgängig**: jede Bewegung wird protokolliert und
   lässt sich direkt aus dem Log zurücknehmen
@@ -181,8 +183,10 @@ newer.
 - 👁️ **Watcher mode** (optional): checks the download folder in the
   background and notifies you about new finds — sorting still only happens
   after your confirmation
-- 🧹 **Library check**: per-system statistics and detection of misplaced
-  ROMs (e.g. a `.gba` inside `roms/psx`)
+- 🧹 **Library check**: per-system statistics, detection of misplaced
+  ROMs and a duplicate overview (regions/revisions)
+- 🏅 **DAT verification** (optional): verify sorted ROMs by checksum
+  against No-Intro/Redump DAT files
 - 🔄 **Update check & in-app download** directly from Settings
 - 📜 **Action log with undo**: every move is recorded and can be reverted
   right from the log

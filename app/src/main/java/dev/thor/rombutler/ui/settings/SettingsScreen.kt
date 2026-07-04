@@ -383,6 +383,17 @@ fun SettingsScreen(
                                 )
                             }
                         }
+                        if (report.duplicates.isNotEmpty()) {
+                            Spacer(Modifier.size(6.dp))
+                            Text(
+                                text = stringResource(
+                                    R.string.settings_library_duplicates,
+                                    report.duplicates.size,
+                                ),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.secondary,
+                            )
+                        }
                         Spacer(Modifier.size(10.dp))
                         if (report.misplaced.isNotEmpty()) {
                             Button(

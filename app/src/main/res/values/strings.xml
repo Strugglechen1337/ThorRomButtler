@@ -16,7 +16,7 @@
 
     <!-- What's new (update every release!) -->
     <string name="whatsnew_title">New in version %s</string>
-    <string name="whatsnew_body">• Warning and block when storage is insufficient\n• Notice when file access was revoked\n• "Share → Thor ROM Butler" from other apps\n• Collection export as Markdown\n• This what\'s-new dialog 😉\n\nFull details in the changelog on GitHub.</string>
+    <string name="whatsnew_body">• DAT verification: verify sorted ROMs by checksum against No-Intro/Redump DATs (Settings → DAT folder)\n• Duplicate overview: find the same game in multiple regions/revisions (library check)\n\nFull details in the changelog on GitHub.</string>
 
     <!-- Setup screen -->
     <string name="setup_title">Setup</string>
@@ -153,6 +153,7 @@
     <string name="settings_library_misplaced">Review %d misplaced ROMs</string>
     <string name="settings_library_all_good">Everything sorted correctly. 🧹</string>
     <string name="settings_library_export">Export collection (Markdown)</string>
+    <string name="settings_library_duplicates">%d games present multiple times (regions/revisions) – details in the export</string>
     <string name="settings_battery_hint">Aggressive battery optimization can interrupt very long sorting runs. If that happens, exempt the app from optimization:</string>
     <string name="settings_battery_button">Open battery optimization</string>
     <string name="settings_crash_title">Crash report available</string>

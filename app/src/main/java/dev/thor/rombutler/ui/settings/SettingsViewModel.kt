@@ -212,6 +212,17 @@ class SettingsViewModel @Inject constructor(
                 for (stat in report.stats) {
                     sb.appendLine("- **${stat.displayName}**: ${stat.romCount} ROMs · ${formatBytes(stat.totalBytes)}")
                 }
+                if (report.duplicates.isNotEmpty()) {
+                    sb.appendLine()
+                    sb.appendLine("## Duplikate / Duplicates (1G1R)")
+                    sb.appendLine()
+                    for (dup in report.duplicates) {
+                        sb.appendLine("- **${dup.title}** (${dup.systemName})")
+                        for (variant in dup.variants) {
+                            sb.appendLine("  - $variant")
+                        }
+                    }
+                }
                 java.io.File(dir, "ThorRomButler-Sammlung.md").writeText(sb.toString())
             }
             onResult(result.isSuccess)

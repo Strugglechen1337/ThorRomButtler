@@ -51,6 +51,7 @@ class LibraryChecker @Inject constructor(
 
         val stats = mutableListOf<SystemStat>()
         val misplaced = mutableListOf<DetectedRom>()
+        val duplicates = mutableListOf<dev.thor.rombutler.domain.repository.DuplicateGroup>()
 
         for (dir in base.listFiles()?.filter { it.isDirectory }.orEmpty()) {
             val system = folderToSystem[dir.name.lowercase()] ?: continue
@@ -63,6 +64,18 @@ class LibraryChecker @Inject constructor(
                 romCount = romFiles.size,
                 totalBytes = romFiles.sumOf { it.length() },
             )
+
+            // 1G1R view: same normalized title more than once in one system
+            romFiles
+                .groupBy { normalizeTitle(it.name) }
+                .filterValues { it.size > 1 && it.first().extension.lowercase() != "bin" }
+                .forEach { (title, files) ->
+                    duplicates += dev.thor.rombutler.domain.repository.DuplicateGroup(
+                        title = title,
+                        systemName = system.displayName,
+                        variants = files.map { it.name }.sorted(),
+                    )
+                }
 
             // Group per directory (bin+cue stays together), then question
             // only groups with a CERTAIN detection that disagrees.
@@ -92,6 +105,7 @@ class LibraryChecker @Inject constructor(
             totalBytes = stats.sumOf { it.totalBytes },
             stats = stats.sortedByDescending { it.totalBytes },
             misplaced = misplaced.sortedBy { it.group.primary.lowercase() },
+            duplicates = duplicates.sortedBy { it.title },
         )
     }
 
@@ -122,7 +136,22 @@ class LibraryChecker @Inject constructor(
         return if (byMagic.confidence.ordinal < byName.confidence.ordinal) byMagic else byName
     }
 
-    private companion object {
-        const val MAX_DEPTH = 2 // system folder + per-game subfolders
+    companion object {
+        private const val MAX_DEPTH = 2 // system folder + per-game subfolders
+
+        private val TAG_GROUPS = Regex("""[(\[][^)\]]*[)\]]""")
+        private val MULTI_SPACE = Regex("""\s+""")
+
+        /**
+         * Normalized game title per No-Intro naming: extension and all
+         * `(...)`/`[...]` tag groups stripped, whitespace collapsed,
+         * lowercase — "Game (Europe) (Rev 1).gba" == "Game (USA).gba".
+         */
+        fun normalizeTitle(fileName: String): String = fileName
+            .substringBeforeLast('.')
+            .replace(TAG_GROUPS, " ")
+            .replace(MULTI_SPACE, " ")
+            .trim()
+            .lowercase()
     }
 }
