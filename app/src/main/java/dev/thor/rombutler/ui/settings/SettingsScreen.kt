@@ -71,6 +71,7 @@ fun SettingsScreen(
     var showRomBasePicker by remember { mutableStateOf(false) }
     var showFolderOverrides by remember { mutableStateOf(false) }
     var showSourcePicker by remember { mutableStateOf(false) }
+    var showDatPicker by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -114,6 +115,36 @@ fun SettingsScreen(
                     path = settings.romBasePath,
                     onClick = { showRomBasePicker = true },
                 )
+                Spacer(Modifier.size(12.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { showDatPicker = true },
+                    ) {
+                        Text(
+                            text = stringResource(R.string.settings_dat_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            text = settings.datFolderPath
+                                ?: stringResource(R.string.settings_dat_hint),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 2,
+                        )
+                    }
+                    if (settings.datFolderPath != null) {
+                        IconButton(onClick = { viewModel.setDatFolderPath(null) }) {
+                            Icon(
+                                imageVector = Icons.Filled.Delete,
+                                contentDescription = stringResource(R.string.settings_sources_remove),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
             }
 
             // Behavior
@@ -545,6 +576,17 @@ fun SettingsScreen(
         }
     }
 
+    if (showDatPicker) {
+        FolderPickerDialog(
+            title = stringResource(R.string.settings_dat_title),
+            initialPath = settings.datFolderPath ?: settings.downloadPath,
+            onSelect = {
+                viewModel.setDatFolderPath(it)
+                showDatPicker = false
+            },
+            onDismiss = { showDatPicker = false },
+        )
+    }
     if (showSourcePicker) {
         FolderPickerDialog(
             title = stringResource(R.string.settings_sources_add),

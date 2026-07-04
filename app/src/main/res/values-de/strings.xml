@@ -130,6 +130,8 @@
     <string name="settings_folder_override_label">Ordnername</string>
     <string name="settings_folder_override_default">Standard (ES-DE): %s</string>
     <string name="settings_folder_override_reset">Standard</string>
+    <string name="settings_dat_title">DAT-Ordner (Dump-Verifizierung)</string>
+    <string name="settings_dat_hint">Optional: Ordner mit No-Intro/Redump-.dat-Dateien. Einsortierte ROMs werden dann per Prüfsumme verifiziert (Ergebnis im Log).</string>
     <string name="settings_trash">Papierkorb statt Löschen</string>
     <string name="settings_trash_hint">Archive wandern in einen versteckten Papierkorb (automatische Leerung nach 7 Tagen).</string>
     <string name="settings_sources_title">Weitere Quellordner</string>

@@ -131,6 +131,8 @@
     <string name="settings_folder_override_label">Folder name</string>
     <string name="settings_folder_override_default">Default (ES-DE): %s</string>
     <string name="settings_folder_override_reset">Default</string>
+    <string name="settings_dat_title">DAT folder (dump verification)</string>
+    <string name="settings_dat_hint">Optional: folder with No-Intro/Redump .dat files. Sorted ROMs are then verified by checksum (result in the log).</string>
     <string name="settings_trash">Trash instead of delete</string>
     <string name="settings_trash_hint">Archives move to a hidden trash folder (purged automatically after 7 days).</string>
     <string name="settings_sources_title">Additional source folders</string>
