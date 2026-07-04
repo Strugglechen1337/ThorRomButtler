@@ -192,6 +192,38 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Writes the library report as a Markdown list into the download
+     * folder (`ThorRomButler-Sammlung.md`).
+     */
+    fun exportLibrary(report: LibraryReport, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val result = runCatching {
+                val dir = settings.value.downloadPath ?: error("Kein Download-Ordner")
+                val sb = StringBuilder()
+                sb.appendLine("# Thor ROM Butler – Sammlung / Collection")
+                sb.appendLine()
+                sb.appendLine("**${report.totalRoms} ROMs** · ${formatBytes(report.totalBytes)}")
+                sb.appendLine()
+                for (stat in report.stats) {
+                    sb.appendLine("- **${stat.displayName}**: ${stat.romCount} ROMs · ${formatBytes(stat.totalBytes)}")
+                }
+                java.io.File(dir, "ThorRomButler-Sammlung.md").writeText(sb.toString())
+            }
+            onResult(result.isSuccess)
+        }
+    }
+
+    private fun formatBytes(bytes: Long): String {
+        val gb = 1024.0 * 1024 * 1024
+        val mb = 1024.0 * 1024
+        return if (bytes >= gb) {
+            String.format(java.util.Locale.ROOT, "%.1f GB", bytes / gb)
+        } else {
+            String.format(java.util.Locale.ROOT, "%.0f MB", bytes / mb)
+        }
+    }
+
     /** Hands the misplaced ROMs to the review flow. */
     fun prepareMisplacedReview(report: LibraryReport): Boolean {
         if (report.misplaced.isEmpty()) return false

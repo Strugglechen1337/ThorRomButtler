@@ -376,6 +376,21 @@ fun SettingsScreen(
                         }
                         Spacer(Modifier.size(6.dp))
                         OutlinedButton(
+                            onClick = {
+                                viewModel.exportLibrary(report) { ok ->
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        context.getString(
+                                            if (ok) R.string.settings_backup_done else R.string.settings_backup_failed,
+                                        ),
+                                        android.widget.Toast.LENGTH_SHORT,
+                                    ).show()
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) { Text(stringResource(R.string.settings_library_export)) }
+                        Spacer(Modifier.size(6.dp))
+                        OutlinedButton(
                             onClick = viewModel::checkLibrary,
                             modifier = Modifier.fillMaxWidth(),
                         ) { Text(stringResource(R.string.settings_library_check)) }

@@ -15,7 +15,7 @@
 
     <!-- What's new (pro Release aktualisieren!) -->
     <string name="whatsnew_title">Neu in Version %s</string>
-    <string name="whatsnew_body">• Warnung und Sperre, wenn der Speicherplatz nicht reicht\n• Hinweis bei entzogener Dateizugriffs-Berechtigung\n• Dieser „Was ist neu"-Dialog 😉\n\nAlle Details im Changelog auf GitHub.</string>
+    <string name="whatsnew_body">• Warnung und Sperre, wenn der Speicherplatz nicht reicht\n• Hinweis bei entzogener Dateizugriffs-Berechtigung\n• „Teilen → Thor ROM Butler" aus anderen Apps\n• Sammlungs-Export als Markdown\n• Dieser „Was ist neu"-Dialog 😉\n\nAlle Details im Changelog auf GitHub.</string>
 
     <!-- Setup screen -->
     <string name="setup_title">Einrichtung</string>
@@ -149,6 +149,7 @@
     <string name="settings_library_summary">%1$d ROMs · %2$s</string>
     <string name="settings_library_misplaced">%d falsch einsortierte ROMs prüfen</string>
     <string name="settings_library_all_good">Alles korrekt einsortiert. 🧹</string>
+    <string name="settings_library_export">Sammlung exportieren (Markdown)</string>
     <string name="settings_battery_hint">Bei sehr langen Einsortier-Läufen kann aggressive Akku-Optimierung den Vorgang unterbrechen. Bei Problemen die App von der Optimierung ausnehmen:</string>
     <string name="settings_battery_button">Akku-Optimierung öffnen</string>
     <string name="settings_crash_title">Absturzbericht vorhanden</string>

@@ -2,6 +2,16 @@
 
 All notable user-facing changes are documented here.
 
+## 0.8.1
+
+- Storage preflight now warns in red and blocks sorting when space is
+  insufficient.
+- The scan screen detects a revoked all-files permission and offers to
+  re-grant it instead of showing an empty state.
+- One-time what's-new dialog after app updates.
+- Share target: send files from other apps straight to the butler.
+- Collection export as Markdown from the library check.
+
 ## 0.8.0
 
 - Added adaptive two-column layout for scan and review on wide/landscape
