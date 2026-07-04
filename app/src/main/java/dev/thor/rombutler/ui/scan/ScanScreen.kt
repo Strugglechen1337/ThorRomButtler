@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.FolderOff
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.foundation.layout.height
@@ -177,6 +178,7 @@ fun ScanScreen(
         ) { s ->
             when (s) {
                 ScanUiState.Scanning -> ScanningIndicator(Modifier.padding(innerPadding))
+                ScanUiState.PermissionMissing -> PermissionMissingState(Modifier.padding(innerPadding))
                 ScanUiState.Empty -> EmptyState(Modifier.padding(innerPadding))
                 is ScanUiState.Found -> ArchiveList(
                     items = s.items,
@@ -202,6 +204,48 @@ private fun ScanningIndicator(modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+/** Shown when the all-files permission was revoked after setup. */
+@Composable
+private fun PermissionMissingState(modifier: Modifier = Modifier) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Shield,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier.size(48.dp),
+        )
+        Spacer(Modifier.size(12.dp))
+        Text(
+            text = stringResource(R.string.scan_permission_missing),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        Text(
+            text = stringResource(R.string.scan_permission_missing_hint),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.size(16.dp))
+        Button(onClick = {
+            context.startActivity(
+                android.content.Intent(
+                    android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                    android.net.Uri.fromParts("package", context.packageName, null),
+                ),
+            )
+        }) {
+            Text(stringResource(R.string.setup_permission_button))
+        }
     }
 }
 

@@ -36,6 +36,9 @@ sealed interface ScanUiState {
     /** Directory scan in progress. */
     data object Scanning : ScanUiState
 
+    /** All-files permission was revoked after setup — scanning is impossible. */
+    data object PermissionMissing : ScanUiState
+
     /** Scan finished without finding any archives or loose ROMs. */
     data object Empty : ScanUiState
 
@@ -105,6 +108,12 @@ class ScanViewModel @Inject constructor(
     /** Scans the download folder, then analyzes each archive sequentially. */
     fun rescan() {
         scanJob?.cancel()
+        // Permission can be revoked in the system settings at any time —
+        // without it the scan would just look empty, which is misleading.
+        if (!android.os.Environment.isExternalStorageManager()) {
+            _uiState.value = ScanUiState.PermissionMissing
+            return
+        }
         _uiState.value = ScanUiState.Scanning
         scanJob = viewModelScope.launch {
             val archives = archiveRepository.scanForArchives()

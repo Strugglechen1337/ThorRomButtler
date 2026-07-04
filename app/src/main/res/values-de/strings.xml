@@ -39,6 +39,8 @@
     <string name="scan_open_setup">Einrichtung öffnen</string>
     <string name="scan_in_progress">Durchsuche Download-Ordner …</string>
     <string name="scan_empty_title">Alles aufgeräumt.</string>
+    <string name="scan_permission_missing">Dateizugriff wurde entzogen</string>
+    <string name="scan_permission_missing_hint">Ohne die Berechtigung „Verwaltung aller Dateien" kann der Butler nicht scannen oder einsortieren.</string>
     <string name="scan_empty_hint">Im Download-Ordner liegen keine Archive (ZIP, 7z, RAR) und keine losen ROM-Dateien.</string>
     <string name="scan_found_count">%d Funde</string>
     <string name="scan_loose_title">Lose ROM-Dateien (%d)</string>
