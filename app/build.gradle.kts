@@ -26,8 +26,8 @@ android {
         applicationId = "dev.thor.rombutler"
         minSdk = 33
         targetSdk = 37
-        versionCode = 16
-        versionName = "1.1.1"
+        versionCode = 17
+        versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -110,4 +110,11 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.truth)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.json)
+
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

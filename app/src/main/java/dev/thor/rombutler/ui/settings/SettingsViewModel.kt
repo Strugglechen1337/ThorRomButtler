@@ -9,9 +9,16 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.thor.rombutler.data.log.CrashLog
+import dev.thor.rombutler.data.settings.SettingsBackupCodec
 import dev.thor.rombutler.data.update.GitHubUpdateChecker
 import dev.thor.rombutler.data.update.UpdateInfo
+import dev.thor.rombutler.domain.detection.SystemPackCodec
 import dev.thor.rombutler.domain.detection.SystemRegistry
+import dev.thor.rombutler.domain.model.SystemDefinition
+import dev.thor.rombutler.domain.model.SystemExtensionConflict
+import dev.thor.rombutler.domain.model.SystemPack
+import dev.thor.rombutler.domain.model.SystemPackDecodeResult
+import dev.thor.rombutler.domain.model.SystemPackError
 import dev.thor.rombutler.domain.repository.LibraryReport
 import dev.thor.rombutler.domain.repository.LibraryRepository
 import dev.thor.rombutler.ui.review.ReviewSession
@@ -42,6 +49,36 @@ sealed interface LibraryCheckState {
     data class Failed(val message: String) : LibraryCheckState
 }
 
+enum class SystemPackAction {
+    SAVED,
+    DELETED,
+    IMPORTED,
+    EXPORTED,
+}
+
+enum class SystemPackActionError {
+    NO_DOWNLOAD_FOLDER,
+    FILE_NOT_FOUND,
+    NO_CUSTOM_SYSTEMS,
+    IO_ERROR,
+}
+
+sealed interface SystemPackActionResult {
+    data class Success(
+        val action: SystemPackAction,
+        val systemCount: Int,
+        val conflictCount: Int,
+    ) : SystemPackActionResult
+
+    data class Invalid(val failure: SystemPackDecodeResult.Failure) : SystemPackActionResult
+    data class Failed(val error: SystemPackActionError) : SystemPackActionResult
+}
+
+data class SystemPackImportPreview(
+    val pack: SystemPack,
+    val conflicts: List<SystemExtensionConflict>,
+)
+
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     @param:ApplicationContext private val context: Context,
@@ -58,6 +95,14 @@ class SettingsViewModel @Inject constructor(
     private val _libraryState = MutableStateFlow<LibraryCheckState>(LibraryCheckState.Idle)
     val libraryState: StateFlow<LibraryCheckState> = _libraryState.asStateFlow()
 
+    val registryState = registry.state
+    private val _systemPackResult = MutableStateFlow<SystemPackActionResult?>(null)
+    val systemPackResult: StateFlow<SystemPackActionResult?> = _systemPackResult.asStateFlow()
+    private val _systemPackImportPreview = MutableStateFlow<SystemPackImportPreview?>(null)
+    val systemPackImportPreview: StateFlow<SystemPackImportPreview?> =
+        _systemPackImportPreview.asStateFlow()
+    private var pendingSystemPackJson: String? = null
+
     /** True when a crash was recorded — shows the share row in settings. */
     val hasCrashReport: Boolean = crashLog.exists()
 
@@ -65,6 +110,10 @@ class SettingsViewModel @Inject constructor(
     fun crashReportText(): String? = crashLog.read()
 
     fun clearCrashReport() = crashLog.clear()
+
+    fun consumeSystemPackResult() {
+        _systemPackResult.value = null
+    }
 
     val settings: StateFlow<AppSettings> = settingsRepository.settings
         .stateIn(
@@ -140,18 +189,8 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val result = runCatching {
                 val s = settings.value
-                val json = org.json.JSONObject()
-                    .put("romBasePath", s.romBasePath)
-                    .put("downloadPath", s.downloadPath)
-                    .put("additionalSourcePaths", org.json.JSONArray(s.additionalSourcePaths))
-                    .put("deleteArchivesAfterExtract", s.deleteArchivesAfterExtract)
-                    .put("trashInsteadOfDelete", s.trashInsteadOfDelete)
-                    .put("autoUpdateCheck", s.autoUpdateCheck)
-                    .put("watcherEnabled", s.watcherEnabled)
-                    .put("folderOverrides", org.json.JSONObject(s.folderOverrides as Map<*, *>))
-                    .toString(2)
                 val dir = s.downloadPath ?: error("Kein Download-Ordner")
-                java.io.File(dir, BACKUP_FILE_NAME).writeText(json)
+                java.io.File(dir, BACKUP_FILE_NAME).writeText(SettingsBackupCodec.encode(s))
             }
             onResult(result.isSuccess)
         }
@@ -164,32 +203,25 @@ class SettingsViewModel @Inject constructor(
                 val dir = settings.value.downloadPath ?: error("Kein Download-Ordner")
                 val file = java.io.File(dir, BACKUP_FILE_NAME)
                 check(file.isFile) { "Backup-Datei fehlt" }
-                val json = org.json.JSONObject(file.readText())
+                check(file.length() <= SettingsBackupCodec.MAX_BACKUP_BYTES) {
+                    "Backup-Datei ist zu groß"
+                }
+                val imported = SettingsBackupCodec.decode(
+                    json = file.readText(),
+                    current = settings.value,
+                    canonicalizeCustomPack = { customPack ->
+                        when (val decoded = registry.validateCustomPack(customPack)) {
+                            is SystemPackDecodeResult.Failure -> {
+                                error("Invalid custom system pack: ${decoded.error}")
+                            }
 
-                json.optString("romBasePath").takeIf { it.isNotBlank() }
-                    ?.let { settingsRepository.setRomBasePath(it) }
-                json.optString("downloadPath").takeIf { it.isNotBlank() }
-                    ?.let { settingsRepository.setDownloadPath(it) }
-                json.optJSONArray("additionalSourcePaths")?.let { arr ->
-                    for (i in 0 until arr.length()) {
-                        settingsRepository.addSourcePath(arr.getString(i))
-                    }
-                }
-                settingsRepository.setDeleteArchivesAfterExtract(
-                    json.optBoolean("deleteArchivesAfterExtract", false),
+                            is SystemPackDecodeResult.Success -> SystemPackCodec.encode(decoded.pack)
+                        }
+                    },
                 )
-                settingsRepository.setTrashInsteadOfDelete(
-                    json.optBoolean("trashInsteadOfDelete", false),
-                )
-                settingsRepository.setAutoUpdateCheck(json.optBoolean("autoUpdateCheck", false))
-                val watcher = json.optBoolean("watcherEnabled", false)
-                settingsRepository.setWatcherEnabled(watcher)
-                watcherScheduler.setEnabled(watcher)
-                json.optJSONObject("folderOverrides")?.let { overrides ->
-                    for (key in overrides.keys()) {
-                        settingsRepository.setFolderOverride(key, overrides.getString(key))
-                    }
-                }
+                settingsRepository.replaceSettings(imported)
+                registry.applyCustomPackJson(imported.customSystemPackJson)
+                watcherScheduler.setEnabled(imported.watcherEnabled)
             }
             onResult(result.isSuccess)
         }
@@ -197,6 +229,7 @@ class SettingsViewModel @Inject constructor(
 
     private companion object {
         const val BACKUP_FILE_NAME = "ThorRomButler-settings.json"
+        const val SYSTEM_PACK_FILE_NAME = "ThorRomButler-system-pack.json"
     }
 
     /** Scans the ROM library: per-system statistics + misplaced ROMs. */
@@ -266,6 +299,185 @@ class SettingsViewModel @Inject constructor(
     /** Blank/empty restores the ES-DE default for that system. */
     fun setFolderOverride(systemId: String, folder: String?) {
         viewModelScope.launch { settingsRepository.setFolderOverride(systemId, folder) }
+    }
+
+    fun saveCustomSystem(originalId: String?, definition: SystemDefinition) {
+        viewModelScope.launch {
+            val currentState = registry.state.value
+            val updated = currentState.customSystems
+                .filterNot { it.id == originalId }
+                .plus(definition)
+                .sortedBy { it.displayName.lowercase() }
+            val result = persistCustomSystems(
+                systems = updated,
+                packId = currentState.customPack?.packId,
+                displayName = currentState.customPack?.displayName,
+            )
+            if (result is SystemPackActionResult.Success &&
+                originalId != null && originalId != definition.id
+            ) {
+                settingsRepository.setFolderOverride(originalId, null)
+            }
+            _systemPackResult.value = result
+        }
+    }
+
+    fun deleteCustomSystem(systemId: String) {
+        viewModelScope.launch {
+            val currentState = registry.state.value
+            val updated = currentState.customSystems.filterNot { it.id == systemId }
+            val result = persistCustomSystems(
+                systems = updated,
+                packId = currentState.customPack?.packId,
+                displayName = currentState.customPack?.displayName,
+                action = SystemPackAction.DELETED,
+            )
+            if (result is SystemPackActionResult.Success) {
+                settingsRepository.setFolderOverride(systemId, null)
+            }
+            _systemPackResult.value = result
+        }
+    }
+
+    fun previewSystemPackImport() {
+        viewModelScope.launch {
+            pendingSystemPackJson = null
+            _systemPackImportPreview.value = null
+            val dir = settings.value.downloadPath
+            if (dir.isNullOrBlank()) {
+                _systemPackResult.value = SystemPackActionResult.Failed(
+                    SystemPackActionError.NO_DOWNLOAD_FOLDER,
+                )
+                return@launch
+            }
+            val file = java.io.File(dir, SYSTEM_PACK_FILE_NAME)
+            if (!file.isFile) {
+                _systemPackResult.value = SystemPackActionResult.Failed(
+                    SystemPackActionError.FILE_NOT_FOUND,
+                )
+                return@launch
+            }
+            if (file.length() > SystemPackCodec.MAX_PACK_BYTES) {
+                _systemPackResult.value = SystemPackActionResult.Invalid(
+                    SystemPackDecodeResult.Failure(SystemPackError.PACK_TOO_LARGE),
+                )
+                return@launch
+            }
+            val json = runCatching { file.readText() }.getOrElse {
+                _systemPackResult.value = SystemPackActionResult.Failed(
+                    SystemPackActionError.IO_ERROR,
+                )
+                return@launch
+            }
+            when (val decoded = registry.validateCustomPack(json)) {
+                is SystemPackDecodeResult.Failure -> {
+                    _systemPackResult.value = SystemPackActionResult.Invalid(decoded)
+                }
+
+                is SystemPackDecodeResult.Success -> {
+                    val canonical = SystemPackCodec.encode(decoded.pack)
+                    pendingSystemPackJson = canonical
+                    _systemPackImportPreview.value = SystemPackImportPreview(
+                        pack = decoded.pack,
+                        conflicts = registry.conflictsForCustomSystems(decoded.pack.systems),
+                    )
+                }
+            }
+        }
+    }
+
+    fun cancelSystemPackImport() {
+        pendingSystemPackJson = null
+        _systemPackImportPreview.value = null
+    }
+
+    fun confirmSystemPackImport() {
+        val canonical = pendingSystemPackJson ?: return
+        val preview = _systemPackImportPreview.value ?: return
+        viewModelScope.launch {
+            _systemPackResult.value = runCatching {
+                settingsRepository.setCustomSystemPack(canonical)
+                registry.applyCustomPackJson(canonical)
+                SystemPackActionResult.Success(
+                    action = SystemPackAction.IMPORTED,
+                    systemCount = preview.pack.systems.size,
+                    conflictCount = preview.conflicts.size,
+                )
+            }.getOrElse {
+                SystemPackActionResult.Failed(SystemPackActionError.IO_ERROR)
+            }
+            cancelSystemPackImport()
+        }
+    }
+
+    fun exportSystemPack() {
+        viewModelScope.launch {
+            val dir = settings.value.downloadPath
+            if (dir.isNullOrBlank()) {
+                _systemPackResult.value = SystemPackActionResult.Failed(
+                    SystemPackActionError.NO_DOWNLOAD_FOLDER,
+                )
+                return@launch
+            }
+            val pack = registry.state.value.customPack
+            if (pack == null) {
+                _systemPackResult.value = SystemPackActionResult.Failed(
+                    SystemPackActionError.NO_CUSTOM_SYSTEMS,
+                )
+                return@launch
+            }
+            val success = runCatching {
+                java.io.File(dir, SYSTEM_PACK_FILE_NAME)
+                    .writeText(SystemPackCodec.encode(pack))
+            }.isSuccess
+            _systemPackResult.value = if (success) {
+                SystemPackActionResult.Success(
+                    action = SystemPackAction.EXPORTED,
+                    systemCount = pack.systems.size,
+                    conflictCount = registry.state.value.conflicts.size,
+                )
+            } else {
+                SystemPackActionResult.Failed(SystemPackActionError.IO_ERROR)
+            }
+        }
+    }
+
+    private suspend fun persistCustomSystems(
+        systems: List<SystemDefinition>,
+        packId: String?,
+        displayName: String?,
+        action: SystemPackAction = SystemPackAction.SAVED,
+    ): SystemPackActionResult {
+        if (systems.isEmpty()) {
+            return runCatching {
+                settingsRepository.setCustomSystemPack(null)
+                registry.applyCustomPackJson(null)
+                SystemPackActionResult.Success(action, 0, 0)
+            }.getOrElse {
+                SystemPackActionResult.Failed(SystemPackActionError.IO_ERROR)
+            }
+        }
+        val json = registry.encodeCustomPack(
+            systems = systems,
+            packId = packId ?: SystemRegistry.DEFAULT_CUSTOM_PACK_ID,
+            displayName = displayName ?: SystemRegistry.DEFAULT_CUSTOM_PACK_NAME,
+        )
+        return when (val validated = registry.validateCustomPack(json)) {
+            is SystemPackDecodeResult.Failure -> SystemPackActionResult.Invalid(validated)
+            is SystemPackDecodeResult.Success -> {
+                runCatching {
+                    settingsRepository.setCustomSystemPack(json)
+                    registry.applyCustomPackJson(json)
+                    SystemPackActionResult.Success(
+                        action = action,
+                        systemCount = systems.size,
+                        conflictCount = registry.state.value.conflicts.size,
+                    )
+                }.getOrElse {
+                    SystemPackActionResult.Failed(SystemPackActionError.IO_ERROR)
+                }
+            }
+        }
     }
 
     /** Manual update check — the app's only network access. */

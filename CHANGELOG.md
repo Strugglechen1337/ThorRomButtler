@@ -2,6 +2,42 @@
 
 All notable user-facing changes are documented here.
 
+## 1.2.0
+
+### Deutsch
+
+- Versionierte System-Packs: Die eingebauten Systemdefinitionen liegen jetzt
+  als geprüftes JSON-Schema v1 mit sicherem Code-Fallback vor.
+- Eigene Systeme können in den Einstellungen angelegt, bearbeitet und entfernt
+  sowie über `ThorRomButler-system-pack.json` importiert/exportiert werden.
+- Pack-Größe, Felder, IDs, Zielordner, Endungen und Magic-Regeln werden vor der
+  Aktivierung geprüft. Eingebaute Systeme können nicht überschrieben werden.
+- Konfligierende Endungen werden sichtbar gewarnt und bleiben für die
+  automatische Erkennung `UNKNOWN`.
+- Eine Importvorschau zeigt Pack-Name, Systemanzahl und Konflikte, bevor eigene
+  Systeme ersetzt werden.
+- Einstellungs-Backups werden vollständig validiert und in einer atomaren
+  DataStore-Transaktion übernommen; unsichere Zielordner werden abgelehnt.
+- GitHub-Beschreibung und Issue-Vorlagen sind durchgehend Deutsch/Englisch;
+  Compose-Tests sichern Pack-Vorschau und Editor-Validierung ab.
+
+### English
+
+- Versioned system packs: built-in system definitions now use a validated JSON
+  schema v1 with a safe code fallback.
+- Custom systems can be created, edited, and removed in Settings, then imported
+  or exported through `ThorRomButler-system-pack.json`.
+- Pack size, fields, IDs, target folders, extensions, and magic rules are
+  validated before activation. Built-in systems cannot be overwritten.
+- Conflicting extensions are shown as warnings and remain `UNKNOWN` for
+  automatic detection.
+- An import preview shows the pack name, system count, and conflicts before
+  custom systems are replaced.
+- Settings backups are validated completely and applied in one atomic DataStore
+  transaction; unsafe target folders are rejected.
+- The GitHub description and issue forms are fully bilingual; Compose tests
+  cover the pack preview and editor validation.
+
 ## 1.1.1
 
 ### Deutsch
