@@ -16,7 +16,7 @@
 
     <!-- What's new (update every release!) -->
     <string name="whatsnew_title">New in version %s</string>
-    <string name="whatsnew_body">• New Quick Settings tile: toggle LAN receive straight from the notification shade — the tile shows the upload URL while active\n\nFull details in the changelog on GitHub.</string>
+    <string name="whatsnew_body">• Safe replacement: existing ROMs stay protected until verification succeeds\n• Source archives are kept by default; undo supports the trash folder\n• LAN receive with a one-time session address and automatic 30-minute stop\n\nFull details in the changelog on GitHub.</string>
 
     <!-- Setup screen -->
     <string name="setup_title">Setup</string>

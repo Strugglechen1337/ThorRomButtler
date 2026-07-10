@@ -2,7 +2,7 @@
 
 All notable user-facing changes are documented here.
 
-## Unveröffentlicht / Unreleased
+## 1.1.1
 
 ### Deutsch
 
