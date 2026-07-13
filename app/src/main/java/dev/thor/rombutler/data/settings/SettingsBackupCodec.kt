@@ -24,6 +24,8 @@ object SettingsBackupCodec {
             "customSystemPack",
             settings.customSystemPackJson?.let(::JSONObject) ?: JSONObject.NULL,
         )
+        .put("writeM3uPlaylists", settings.writeM3uPlaylists)
+        .put("renameToDatName", settings.renameToDatName)
         .toString(2)
 
     /**
@@ -75,6 +77,11 @@ object SettingsBackupCodec {
                 current.customSystemPackJson,
                 canonicalizeCustomPack,
             ),
+            writeM3uPlaylists = root.booleanSetting(
+                "writeM3uPlaylists",
+                current.writeM3uPlaylists,
+            ),
+            renameToDatName = root.booleanSetting("renameToDatName", current.renameToDatName),
         )
     }
 

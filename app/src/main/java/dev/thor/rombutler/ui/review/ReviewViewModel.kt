@@ -377,7 +377,14 @@ class ReviewViewModel @Inject constructor(
                     )
                 }
 
-            extractionManager.start(tasks, cleanups, deleteArchives, trashMode)
+            extractionManager.start(
+                tasks = tasks,
+                archiveCleanups = cleanups,
+                deleteArchives = deleteArchives,
+                trashInsteadOfDelete = trashMode,
+                writeM3uPlaylists = currentSettings.writeM3uPlaylists,
+                renameToDatName = currentSettings.renameToDatName,
+            )
         }
     }
 

@@ -3,6 +3,8 @@ package dev.thor.rombutler.ui.scan
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.thor.rombutler.data.patch.PatchPair
+import dev.thor.rombutler.data.patch.PatchScanner
 import dev.thor.rombutler.data.update.UpdateAvailability
 import dev.thor.rombutler.domain.model.ArchiveAnalysis
 import dev.thor.rombutler.domain.model.DetectedRom
@@ -51,6 +53,11 @@ sealed interface ScanUiState {
     data class Found(
         val items: List<ArchiveListItem>,
         val looseRoms: List<DetectedRom> = emptyList(),
+        val patches: List<PatchPair> = emptyList(),
+        /** Path of the patch currently being applied, null when idle. */
+        val applyingPatch: String? = null,
+        /** User-facing message of the last failed patch attempt. */
+        val patchError: String? = null,
     ) : ScanUiState {
         /** All analyses finished? */
         val analysisComplete: Boolean get() = items.all { it.analysis != null }
@@ -70,6 +77,7 @@ class ScanViewModel @Inject constructor(
     private val archiveRepository: ArchiveRepository,
     private val archiveAnalyzer: ArchiveAnalyzer,
     private val looseRomRepository: LooseRomRepository,
+    private val patchScanner: PatchScanner,
     private val reviewSession: ReviewSession,
     updateAvailability: UpdateAvailability,
 ) : ViewModel() {
@@ -123,13 +131,15 @@ class ScanViewModel @Inject constructor(
         scanJob = viewModelScope.launch {
             val archives = archiveRepository.scanForArchives()
             val looseRoms = looseRomRepository.scanAndDetect()
-            if (archives.isEmpty() && looseRoms.isEmpty()) {
+            val patches = patchScanner.findPairs()
+            if (archives.isEmpty() && looseRoms.isEmpty() && patches.isEmpty()) {
                 _uiState.value = ScanUiState.Empty
                 return@launch
             }
             _uiState.value = ScanUiState.Found(
                 items = archives.map { ArchiveListItem(it) },
                 looseRoms = looseRoms,
+                patches = patches,
             )
 
             // Two analyses in parallel: disk-bound, but one slow/broken
@@ -157,6 +167,31 @@ class ScanViewModel @Inject constructor(
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Applies one patch/ROM pair; the patched game is written next to the
+     * ROM and appears with the automatic rescan afterwards. The source ROM
+     * and the patch file stay untouched.
+     */
+    fun applyPatch(pair: PatchPair) {
+        val state = _uiState.value as? ScanUiState.Found ?: return
+        if (state.applyingPatch != null) return
+        _uiState.value = state.copy(applyingPatch = pair.patchPath, patchError = null)
+
+        viewModelScope.launch {
+            runCatching { patchScanner.apply(pair) }
+                .onSuccess { rescan() }
+                .onFailure { error ->
+                    _uiState.update { current ->
+                        if (current !is ScanUiState.Found) return@update current
+                        current.copy(
+                            applyingPatch = null,
+                            patchError = error.message ?: "Patch fehlgeschlagen",
+                        )
+                    }
+                }
         }
     }
 

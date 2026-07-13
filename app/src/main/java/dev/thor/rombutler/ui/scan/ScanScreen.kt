@@ -184,6 +184,10 @@ fun ScanScreen(
                 is ScanUiState.Found -> ArchiveList(
                     items = s.items,
                     looseRoms = s.looseRoms,
+                    patches = s.patches,
+                    applyingPatch = s.applyingPatch,
+                    patchError = s.patchError,
+                    onApplyPatch = viewModel::applyPatch,
                     contentPadding = innerPadding,
                 )
             }
@@ -281,6 +285,10 @@ private fun EmptyState(modifier: Modifier = Modifier) {
 private fun ArchiveList(
     items: List<ArchiveListItem>,
     looseRoms: List<DetectedRom>,
+    patches: List<dev.thor.rombutler.data.patch.PatchPair>,
+    applyingPatch: String?,
+    patchError: String?,
+    onApplyPatch: (dev.thor.rombutler.data.patch.PatchPair) -> Unit,
     contentPadding: PaddingValues,
 ) {
     // Adaptive grid: two+ columns on wide/landscape screens (AYN Thor!)
@@ -304,6 +312,17 @@ private fun ArchiveList(
                 modifier = Modifier.padding(bottom = 4.dp),
             )
         }
+        if (patches.isNotEmpty()) {
+            item(key = "patches") {
+                PatchesCard(
+                    patches = patches,
+                    applyingPatch = applyingPatch,
+                    patchError = patchError,
+                    onApply = onApplyPatch,
+                    modifier = Modifier.animateItem(),
+                )
+            }
+        }
         if (looseRoms.isNotEmpty()) {
             item(key = "loose") {
                 LooseRomsCard(looseRoms, modifier = Modifier.animateItem())
@@ -311,6 +330,84 @@ private fun ArchiveList(
         }
         items(items, key = { it.archive.path }) { item ->
             ArchiveCard(item, modifier = Modifier.animateItem())
+        }
+    }
+}
+
+/** ROM patches (IPS/UPS/BPS) paired with their base ROM by file name. */
+@Composable
+private fun PatchesCard(
+    patches: List<dev.thor.rombutler.data.patch.PatchPair>,
+    applyingPatch: String?,
+    patchError: String?,
+    onApply: (dev.thor.rombutler.data.patch.PatchPair) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .neonGlow(elevation = 5.dp)
+            .thorFocusable(MaterialTheme.shapes.medium),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        ),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = stringResource(R.string.scan_patch_title, patches.size),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.size(4.dp))
+            Text(
+                text = stringResource(R.string.scan_patch_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.size(10.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                for (pair in patches) {
+                    val applying = applyingPatch == pair.patchPath
+                    Column {
+                        Text(
+                            text = stringResource(
+                                R.string.scan_patch_pair,
+                                pair.patchName,
+                                pair.romName,
+                            ),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Spacer(Modifier.size(6.dp))
+                        Button(
+                            onClick = { onApply(pair) },
+                            enabled = applyingPatch == null,
+                        ) {
+                            if (applying) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                )
+                                Spacer(Modifier.size(8.dp))
+                            }
+                            Text(
+                                stringResource(
+                                    if (applying) R.string.scan_patch_applying else R.string.scan_patch_apply,
+                                ),
+                            )
+                        }
+                    }
+                }
+            }
+            if (patchError != null) {
+                Spacer(Modifier.size(8.dp))
+                Text(
+                    text = patchError,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
         }
     }
 }

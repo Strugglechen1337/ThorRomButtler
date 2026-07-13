@@ -39,6 +39,16 @@ data class AppSettings(
     val themeId: String = "thor",
     /** Validated schema-v1 JSON containing optional user-defined systems. */
     val customSystemPackJson: String? = null,
+    /**
+     * Write a `.m3u` playlist when several discs of the same game land in a
+     * system folder (default ON — additive, existing playlists are kept).
+     */
+    val writeM3uPlaylists: Boolean = true,
+    /**
+     * Opt-in: rename sorted single-file ROMs to their canonical DAT name
+     * after a successful checksum verification (default OFF).
+     */
+    val renameToDatName: Boolean = false,
 ) {
     /** Setup is complete once both folders are configured. */
     val isSetupComplete: Boolean

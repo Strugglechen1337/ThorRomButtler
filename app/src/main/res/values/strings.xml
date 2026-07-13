@@ -17,7 +17,7 @@
 
     <!-- What's new (update every release!) -->
     <string name="whatsnew_title">New in version %s</string>
-    <string name="whatsnew_body">• Resumable LAN upload queue with progress, speed, ETA, cancel and retry\n• QR code, sharing and connection check for the active session\n• Optional SHA-256 scan for byte-identical ROM files\n• Privacy-friendly diagnostic report for support\n\nFull details in the changelog on GitHub.</string>
+    <string name="whatsnew_body">• ROM patcher: apply IPS/UPS/BPS patches (fan translations, romhacks) directly on the device\n• Multi-disc games get an automatic .m3u playlist\n• Opt-in: rename verified ROMs to their official DAT name\n• Frontend profiles: folder names for Batocera/Knulli and Onion OS in one step\n\nFull details in the changelog on GitHub.</string>
 
     <!-- Setup screen -->
     <string name="setup_title">Setup</string>
@@ -56,6 +56,13 @@
     <string name="scan_found_count">%d found</string>
     <string name="scan_loose_title">Loose ROM files (%d)</string>
     <string name="scan_rar5_unsupported">RAR5 is not supported – please download as ZIP or 7z.</string>
+
+    <!-- ROM patches (IPS/UPS/BPS) -->
+    <string name="scan_patch_title">ROM patches (%d)</string>
+    <string name="scan_patch_hint">Patch and ROM were matched by file name. The original stays untouched; the patched game is created as a new file.</string>
+    <string name="scan_patch_pair">%1$s → %2$s</string>
+    <string name="scan_patch_apply">Apply patch</string>
+    <string name="scan_patch_applying">Patching …</string>
 
     <!-- Archive analysis -->
     <string name="analysis_running">Analyzing contents …</string>
@@ -136,6 +143,19 @@
     <string name="settings_dat_hint">Optional: folder with No-Intro/Redump .dat files. Sorted ROMs are then verified by checksum (result in the log).</string>
     <string name="settings_trash">Trash instead of delete</string>
     <string name="settings_trash_hint">Archives move to a hidden trash folder (purged automatically after 7 days).</string>
+    <string name="settings_m3u">Create playlists for multi-disc games</string>
+    <string name="settings_m3u_hint">When several discs of the same game land in a system folder, a .m3u playlist is created — frontends then show one entry and disc swapping works.</string>
+    <string name="settings_dat_rename">Rename to DAT names</string>
+    <string name="settings_dat_rename_hint">Verified single-file ROMs are renamed to their official No-Intro/Redump name when sorted in. Multi-file games (.bin+.cue) are never renamed.</string>
+    <string name="settings_frontend_profile">Frontend profile</string>
+    <string name="settings_frontend_profile_hint">Set all system folders to the convention of ES-DE, Batocera/Knulli or Onion OS in one step.</string>
+    <string name="settings_frontend_profile_dialog_hint">Applying a profile replaces ALL current folder overrides. Individual folders can still be adjusted afterwards.</string>
+    <string name="settings_frontend_esde">ES-DE (default)</string>
+    <string name="settings_frontend_batocera">Batocera / Knulli</string>
+    <string name="settings_frontend_onion">Onion OS (Miyoo)</string>
+    <string name="settings_frontend_default_folders">Uses the built-in folder names</string>
+    <string name="settings_frontend_override_count">%d folders differ from ES-DE</string>
+    <string name="settings_frontend_apply">Apply profile</string>
     <string name="settings_sources_title">Additional source folders</string>
     <string name="settings_sources_hint">Scanned in addition to the download folder (e.g. Telegram, USB import).</string>
     <string name="settings_sources_add">Add source folder</string>

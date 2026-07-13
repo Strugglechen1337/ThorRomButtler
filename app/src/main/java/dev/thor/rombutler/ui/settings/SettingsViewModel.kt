@@ -194,6 +194,19 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { settingsRepository.setTrashInsteadOfDelete(enabled) }
     }
 
+    fun setWriteM3uPlaylists(enabled: Boolean) {
+        viewModelScope.launch { settingsRepository.setWriteM3uPlaylists(enabled) }
+    }
+
+    fun setRenameToDatName(enabled: Boolean) {
+        viewModelScope.launch { settingsRepository.setRenameToDatName(enabled) }
+    }
+
+    /** Replaces all folder overrides with the chosen frontend's preset. */
+    fun applyFrontendProfile(profile: dev.thor.rombutler.domain.model.FrontendProfile) {
+        viewModelScope.launch { settingsRepository.replaceFolderOverrides(profile.overrides) }
+    }
+
     fun addSourcePath(path: String) {
         viewModelScope.launch { settingsRepository.addSourcePath(path) }
     }

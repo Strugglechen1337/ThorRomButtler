@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.SystemUpdate
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -116,6 +117,7 @@ fun SettingsScreen(
     var showDownloadPicker by remember { mutableStateOf(false) }
     var showRomBasePicker by remember { mutableStateOf(false) }
     var showFolderOverrides by remember { mutableStateOf(false) }
+    var showFrontendProfiles by remember { mutableStateOf(false) }
     var showSourcePicker by remember { mutableStateOf(false) }
     var showDatPicker by remember { mutableStateOf(false) }
     var showSystemPacks by remember { mutableStateOf(false) }
@@ -286,6 +288,48 @@ fun SettingsScreen(
                         checked = settings.watcherEnabled,
                         onCheckedChange = viewModel::setWatcherEnabled,
                     )
+                }
+                Spacer(Modifier.size(14.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.settings_m3u),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            text = stringResource(R.string.settings_m3u_hint),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Switch(
+                        checked = settings.writeM3uPlaylists,
+                        onCheckedChange = viewModel::setWriteM3uPlaylists,
+                    )
+                }
+                if (!settings.datFolderPath.isNullOrBlank()) {
+                    Spacer(Modifier.size(14.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.settings_dat_rename),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            Text(
+                                text = stringResource(R.string.settings_dat_rename_hint),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Switch(
+                            checked = settings.renameToDatName,
+                            onCheckedChange = viewModel::setRenameToDatName,
+                        )
+                    }
                 }
             }
 
@@ -772,6 +816,33 @@ fun SettingsScreen(
                     }
                 }
                 Spacer(Modifier.size(14.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showFrontendProfiles = true },
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Tune,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp),
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.settings_frontend_profile),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            text = stringResource(R.string.settings_frontend_profile_hint),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                Spacer(Modifier.size(14.dp))
                 Text(
                     text = stringResource(R.string.settings_battery_hint),
                     style = MaterialTheme.typography.bodyMedium,
@@ -940,6 +1011,15 @@ fun SettingsScreen(
             onDismiss = { showFolderOverrides = false },
         )
     }
+    if (showFrontendProfiles) {
+        FrontendProfileDialog(
+            onApply = { profile ->
+                viewModel.applyFrontendProfile(profile)
+                showFrontendProfiles = false
+            },
+            onDismiss = { showFrontendProfiles = false },
+        )
+    }
     if (showSystemPacks) {
         SystemPackManagerDialog(
             state = registryState,
@@ -1030,6 +1110,87 @@ private fun android.content.res.Resources.systemPackActionMessage(
 }
 
 private const val SUPPORT_URL = "https://paypal.me/marcelstrohmeyer"
+
+/**
+ * Frontend presets: applying one replaces ALL folder overrides so the
+ * target folders match the chosen frontend's convention in one step.
+ */
+@Composable
+private fun FrontendProfileDialog(
+    onApply: (dev.thor.rombutler.domain.model.FrontendProfile) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var selected by remember {
+        mutableStateOf(dev.thor.rombutler.domain.model.FrontendProfile.ESDE)
+    }
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.settings_frontend_profile)) },
+        text = {
+            Column {
+                Text(
+                    text = stringResource(R.string.settings_frontend_profile_dialog_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.size(12.dp))
+                for (profile in dev.thor.rombutler.domain.model.FrontendProfile.entries) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { selected = profile }
+                            .padding(vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        androidx.compose.material3.RadioButton(
+                            selected = selected == profile,
+                            onClick = { selected = profile },
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                text = when (profile) {
+                                    dev.thor.rombutler.domain.model.FrontendProfile.ESDE ->
+                                        stringResource(R.string.settings_frontend_esde)
+
+                                    dev.thor.rombutler.domain.model.FrontendProfile.BATOCERA ->
+                                        stringResource(R.string.settings_frontend_batocera)
+
+                                    dev.thor.rombutler.domain.model.FrontendProfile.ONION ->
+                                        stringResource(R.string.settings_frontend_onion)
+                                },
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            Text(
+                                text = if (profile.overrides.isEmpty()) {
+                                    stringResource(R.string.settings_frontend_default_folders)
+                                } else {
+                                    stringResource(
+                                        R.string.settings_frontend_override_count,
+                                        profile.overrides.size,
+                                    )
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            androidx.compose.material3.Button(onClick = { onApply(selected) }) {
+                Text(stringResource(R.string.settings_frontend_apply))
+            }
+        },
+        dismissButton = {
+            androidx.compose.material3.TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.action_cancel))
+            }
+        },
+    )
+}
 
 /**
  * Per-system folder editor: tap a system, type the folder name your

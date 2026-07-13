@@ -252,6 +252,9 @@ class SystemPackCodecTest {
         override suspend fun lastSeenVersionCode(): Int = 0
         override suspend fun setLastSeenVersionCode(versionCode: Int) = unused()
         override suspend fun setFolderOverride(systemId: String, folder: String?) = unused()
+        override suspend fun replaceFolderOverrides(overrides: Map<String, String>) = unused()
+        override suspend fun setWriteM3uPlaylists(enabled: Boolean) = unused()
+        override suspend fun setRenameToDatName(enabled: Boolean) = unused()
         override suspend fun setCustomSystemPack(json: String?) = unused()
         override suspend fun replaceSettings(settings: AppSettings) = unused()
 

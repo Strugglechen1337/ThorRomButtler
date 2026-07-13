@@ -96,7 +96,16 @@ anders überlegst.
   Hintergrund und meldet neue Funde per Benachrichtigung.
 - **Arcade/MAME-Sets** bleiben gepackt und werden als Ganzes verschoben.
 - **Eigene Ordnernamen** (z. B. `ps1` statt `psx`): Einstellungen →
-  „Systemordner anpassen".
+  „Systemordner anpassen". Für Batocera/Knulli oder Onion OS (Miyoo) gibt
+  es fertige **Frontend-Profile**, die alle Ordner in einem Schritt setzen.
+- **ROM-Patches (IPS/UPS/BPS)**: Patch-Datei mit demselben Dateinamen wie
+  die ROM in den Download-Ordner legen (z. B. `Spiel.sfc` + `Spiel.bps`).
+  Der Scan zeigt das Paar als Karte; ein Tipp auf „Patch anwenden" erzeugt
+  das gepatchte Spiel als neue Datei — Original und Patch bleiben erhalten.
+- **Multi-Disc-Spiele**: Landen mehrere Discs desselben Spiels in einem
+  Systemordner, legt der Butler automatisch eine `.m3u`-Playlist an —
+  ein Eintrag im Frontend, Disc-Wechsel funktioniert. Abschaltbar in den
+  Einstellungen; vorhandene Playlists werden nie überschrieben.
 - **Weitere Systeme**: Einstellungen → „System-Packs & eigene Systeme".
   Dort kannst du Definitionen anlegen, bearbeiten und als
   `ThorRomButler-system-pack.json` im Download-Ordner exportieren. Zum Import
@@ -116,7 +125,8 @@ anders überlegst.
   Touch funktioniert parallel weiter.
 - **Dump-Verifizierung**: Ordner mit No-Intro/Redump-`.dat`-Dateien in den
   Einstellungen wählen — einsortierte ROMs werden per Prüfsumme
-  verifiziert (Ergebnis im Log).
+  verifiziert (Ergebnis im Log). Optional benennt „Auf DAT-Namen
+  umbenennen" verifizierte Einzeldatei-ROMs auf den offiziellen Namen um.
 - **Farbwelten**: Thor (blau), Odin (violett) und CRT (grün) in den
   Einstellungen.
 - **Updates**: Einstellungen → „Auf Updates prüfen", oder via
@@ -216,7 +226,16 @@ your mind.
   and notifies you about new finds.
 - **Arcade/MAME sets** stay zipped and are moved as a whole.
 - **Custom folder names** (e.g. `ps1` instead of `psx`): Settings →
-  "Customize system folders".
+  "Customize system folders". For Batocera/Knulli or Onion OS (Miyoo)
+  there are ready-made **frontend profiles** that set all folders in one step.
+- **ROM patches (IPS/UPS/BPS)**: place a patch file with the same file name
+  as the ROM into the download folder (e.g. `Game.sfc` + `Game.bps`). The
+  scan shows the pair as a card; tapping "Apply patch" creates the patched
+  game as a new file — original and patch stay untouched.
+- **Multi-disc games**: when several discs of the same game land in a system
+  folder, the butler automatically writes a `.m3u` playlist — one frontend
+  entry, working disc swap. Can be disabled in Settings; existing playlists
+  are never overwritten.
 - **More systems**: Settings → "System packs & custom systems". Create or edit
   definitions there and export them as `ThorRomButler-system-pack.json` in the
   download folder. To import, place that file in the download folder; importing
@@ -235,6 +254,8 @@ your mind.
   keeps working alongside.
 - **Dump verification**: pick a folder with No-Intro/Redump `.dat` files in
   Settings — sorted ROMs are verified by checksum (result in the log).
+  Optionally, "Rename to DAT names" renames verified single-file ROMs to
+  their official name.
 - **Color themes**: Thor (blue), Odin (violet) and CRT (green) in Settings.
 - **Updates**: Settings → "Check for updates", or via
   [Obtainium](https://github.com/ImranR98/Obtainium).

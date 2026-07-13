@@ -3,6 +3,7 @@ package dev.thor.rombutler.extraction
 import dev.thor.rombutler.di.IoDispatcher
 import dev.thor.rombutler.domain.model.ArchiveType
 import dev.thor.rombutler.domain.model.LogLevel
+import dev.thor.rombutler.domain.library.M3uPlaylists
 import dev.thor.rombutler.domain.model.UndoInfo
 import dev.thor.rombutler.domain.model.UndoKind
 import dev.thor.rombutler.domain.verification.DatIndex
@@ -110,6 +111,8 @@ class ExtractionManager @Inject constructor(
         archiveCleanups: List<ArchiveCleanup>,
         deleteArchives: Boolean,
         trashInsteadOfDelete: Boolean = false,
+        writeM3uPlaylists: Boolean = false,
+        renameToDatName: Boolean = false,
     ) {
         if (tasks.isEmpty() || _state.value is ExtractionRunState.Running) return
         _state.value = ExtractionRunState.Running(
@@ -178,9 +181,11 @@ class ExtractionManager @Inject constructor(
                         )
                     }
 
-                    result.onSuccess { files ->
+                    result.onSuccess { writtenFiles ->
                         processed++
                         processedIds += task.id
+                        val outcome = verifyAndMaybeRename(datIndex, writtenFiles, renameToDatName)
+                        val files = outcome.files
                         // Structured undo info makes the log entry revertible
                         val undo = when (val source = task.source) {
                             is TaskSource.Archive -> UndoInfo(
@@ -198,7 +203,7 @@ class ExtractionManager @Inject constructor(
                         logRepository.append(
                             LogLevel.SUCCESS,
                             "${task.primaryName} → ${task.targetDir} (${files.size} Datei(en))" +
-                                verificationVerdict(datIndex, files),
+                                outcome.logSuffix,
                             undo = undo,
                         )
                     }.onFailure { error ->
@@ -224,6 +229,22 @@ class ExtractionManager @Inject constructor(
             // After a cancel every ordinary suspend call would throw again —
             // logging and the final state MUST survive, hence NonCancellable.
             withContext(NonCancellable) {
+                if (writeM3uPlaylists && !cancelled && processedIds.isNotEmpty()) {
+                    val targetDirs = tasks
+                        .filter { it.id in processedIds }
+                        .map { it.targetDir }
+                        .distinct()
+                    for (dir in targetDirs) {
+                        for (created in M3uPlaylists.generate(java.io.File(dir))) {
+                            logRepository.append(
+                                LogLevel.INFO,
+                                "Playlist angelegt: ${created.playlist.name} " +
+                                    "(${created.discCount} Discs)",
+                            )
+                        }
+                    }
+                }
+
                 if (cancelled) {
                     logRepository.append(
                         LogLevel.INFO,
@@ -268,25 +289,59 @@ class ExtractionManager @Inject constructor(
         }
     }
 
+    /** Final file list plus the log suffix built from verification/rename. */
+    private data class PostProcessOutcome(val files: List<String>, val logSuffix: String)
+
     /**
-     * DAT verdict for the just-written files, appended to the log message.
-     * The files are hot in the page cache, so re-hashing is cheap.
-     * Empty string when verification is disabled (no DATs configured).
+     * DAT verdict for the just-written files (files are hot in the page
+     * cache, so re-hashing is cheap) and — opt-in — a rename to the
+     * canonical DAT name. Renaming is restricted to single-file tasks:
+     * multi-file groups (`.bin`+`.cue`) reference each other by name and
+     * must never be renamed piecemeal.
      */
-    private fun verificationVerdict(datIndex: DatIndex, files: List<String>): String {
-        if (datIndex.isEmpty()) return ""
+    private fun verifyAndMaybeRename(
+        datIndex: DatIndex,
+        files: List<String>,
+        renameToDatName: Boolean,
+    ): PostProcessOutcome {
+        if (datIndex.isEmpty()) return PostProcessOutcome(files, "")
+
         var verified = 0
         var unknown = 0
+        var singleFileEntry: dev.thor.rombutler.domain.verification.DatEntry? = null
         for (path in files) {
             val crc = crc32Of(java.io.File(path)) ?: continue
-            if (datIndex.lookup(crc) != null) verified++ else unknown++
+            val entry = datIndex.lookup(crc)
+            if (entry != null) {
+                verified++
+                if (files.size == 1) singleFileEntry = entry
+            } else {
+                unknown++
+            }
         }
-        return when {
+        val verdict = when {
             unknown == 0 && verified > 0 -> " · ✓ verifizierter Dump"
             verified == 0 && unknown > 0 -> " · ⚠ nicht im DAT"
             verified > 0 -> " · ✓ $verified/${verified + unknown} verifiziert"
             else -> ""
         }
+
+        val entry = singleFileEntry
+        if (!renameToDatName || entry == null) return PostProcessOutcome(files, verdict)
+
+        val current = java.io.File(files.single())
+        val safeName = dev.thor.rombutler.data.files.IncomingFile.sanitizeName(entry.name)
+        if (safeName == null || safeName == current.name || safeName.substringAfterLast('.') != current.extension) {
+            return PostProcessOutcome(files, verdict)
+        }
+        val renamed = java.io.File(current.parentFile, safeName)
+        if (renamed.exists() || !current.renameTo(renamed)) {
+            return PostProcessOutcome(files, verdict)
+        }
+        return PostProcessOutcome(
+            files = listOf(renamed.absolutePath),
+            logSuffix = "$verdict · umbenannt: ${renamed.name}",
+        )
     }
 
     private fun crc32Of(file: java.io.File): Long? = runCatching {

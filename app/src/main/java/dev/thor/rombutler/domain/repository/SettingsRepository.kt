@@ -54,6 +54,15 @@ interface SettingsRepository {
      */
     suspend fun setFolderOverride(systemId: String, folder: String?)
 
+    /** Replaces ALL folder overrides at once (frontend profile switch). */
+    suspend fun replaceFolderOverrides(overrides: Map<String, String>)
+
+    /** Persists whether multi-disc games get an auto-generated `.m3u`. */
+    suspend fun setWriteM3uPlaylists(enabled: Boolean)
+
+    /** Persists the opt-in DAT rename after successful verification. */
+    suspend fun setRenameToDatName(enabled: Boolean)
+
     /** Persists a validated custom system pack; `null` removes all custom systems. */
     suspend fun setCustomSystemPack(json: String?)
 

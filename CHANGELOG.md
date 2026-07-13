@@ -2,6 +2,21 @@
 
 All notable user-facing changes are documented here.
 
+## 1.4.0
+
+- Added a ROM patcher for IPS/UPS/BPS patches (fan translations,
+  romhacks): drop the patch next to the ROM with the same file name and
+  apply it with one tap — the original stays untouched, checksums are
+  verified where the format provides them (UPS/BPS).
+- Multi-disc games now get an automatic `.m3u` playlist when several
+  discs land in a system folder (existing playlists are never touched;
+  can be disabled in Settings).
+- New opt-in "Rename to DAT names": verified single-file ROMs are renamed
+  to their canonical No-Intro/Redump name when sorted in.
+- Added frontend profiles: switch all system folder names to the
+  Batocera/Knulli or Onion OS (Miyoo) convention in one step — ES-DE
+  remains the default.
+
 ## 1.3.0
 
 ### Deutsch

@@ -61,7 +61,15 @@ läuft aber auf jedem Android-Smartphone ab Android 13.
   einsortierter ROMs und Duplikat-Übersicht (Regionen/Revisionen). Optional
   findet ein speicherschonender SHA-256-Lauf bytegleiche Dateien.
 - 🏅 **DAT-Verifizierung** (optional): einsortierte ROMs per Prüfsumme
-  gegen No-Intro/Redump-DAT-Dateien verifizieren
+  gegen No-Intro/Redump-DAT-Dateien verifizieren — auf Wunsch werden
+  verifizierte ROMs auf ihren offiziellen DAT-Namen umbenannt
+- 🩹 **ROM-Patcher**: IPS/UPS/BPS-Patches (Fan-Übersetzungen, Romhacks)
+  direkt auf dem Gerät anwenden — Patch mit gleichem Dateinamen neben die
+  ROM legen, ein Tipp, fertig. Das Original bleibt unangetastet,
+  Prüfsummen werden verifiziert (UPS/BPS).
+- 💿 **M3U-Playlists**: Multi-Disc-Spiele bekommen beim Einsortieren
+  automatisch eine `.m3u`-Playlist — ein Eintrag im Frontend,
+  funktionierender Disc-Wechsel
 - 📡 **LAN-Empfang**: ROMs kabellos vom PC-Browser direkt aufs Gerät
   (Einstellungen → „Empfang starten", einmalige Sitzungsadresse am PC öffnen,
   Dateien reinziehen). Die Browser-Warteschlange zeigt Fortschritt, Tempo und
@@ -76,7 +84,8 @@ läuft aber auf jedem Android-Smartphone ab Android 13.
 - 📜 **Aktions-Log mit Rückgängig**: jede Bewegung wird protokolliert und
   lässt sich direkt aus dem Log zurücknehmen
 - 🧩 **Anpassbare Systemordner**: Ordnernamen pro System überschreibbar
-  (z. B. `roms/ps1` statt `roms/psx` für Nicht-ES-DE-Frontends)
+  (z. B. `roms/ps1` statt `roms/psx`) — oder per **Frontend-Profil** alle
+  Ordner in einem Schritt auf Batocera/Knulli oder Onion OS (Miyoo) stellen
 - 🌍 Deutsch & Englisch · 🌙 **Thor-Design**: Dark Mode only, Neonblau & Gold,
   dezente Glow-Effekte
 
@@ -226,7 +235,14 @@ newer.
   ROMs and a duplicate overview (regions/revisions). An optional,
   memory-efficient SHA-256 pass finds byte-identical files.
 - 🏅 **DAT verification** (optional): verify sorted ROMs by checksum
-  against No-Intro/Redump DAT files
+  against No-Intro/Redump DAT files — optionally, verified ROMs are
+  renamed to their official DAT name
+- 🩹 **ROM patcher**: apply IPS/UPS/BPS patches (fan translations,
+  romhacks) directly on the device — drop the patch next to the ROM with
+  the same file name, one tap, done. The original stays untouched and
+  checksums are verified (UPS/BPS).
+- 💿 **M3U playlists**: multi-disc games automatically get a `.m3u`
+  playlist when sorted in — one frontend entry, working disc swap
 - 📡 **LAN receive**: send ROMs wirelessly from your PC browser straight to
   the device (Settings → "Start receiving", open the one-time session address,
   drop files). The browser queue shows progress, speed, and ETA, with cancel,
@@ -240,7 +256,8 @@ newer.
 - 📜 **Action log with undo**: every move is recorded and can be reverted
   right from the log
 - 🧩 **Customizable system folders**: override folder names per system
-  (e.g. `roms/ps1` instead of `roms/psx` for non-ES-DE frontends)
+  (e.g. `roms/ps1` instead of `roms/psx`) — or use a **frontend profile**
+  to switch all folders to Batocera/Knulli or Onion OS (Miyoo) in one step
 - 🌍 German & English · 🌙 **Thor design**: dark mode only, neon blue and gold,
   subtle glow effects
 
