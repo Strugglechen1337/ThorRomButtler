@@ -63,12 +63,16 @@ sealed interface ScanUiState {
         val analysisComplete: Boolean get() = items.all { it.analysis != null }
 
         /**
-         * Anything to review? Readable archives WITHOUT detected ROMs also
-         * count — they can be assigned as a whole (arcade ROM sets).
+         * Anything to review? Unknown non-BIOS archive members can be assigned
+         * manually and are extracted unless the user selects a packed system.
          */
         val hasReviewableRoms: Boolean
             get() = looseRoms.isNotEmpty() ||
-                items.any { it.analysis is ArchiveAnalysis.Success }
+                items.any { item ->
+                    val success = item.analysis as? ArchiveAnalysis.Success
+                    success != null &&
+                        (success.roms.isNotEmpty() || success.fallbackMembers.isNotEmpty())
+                }
     }
 }
 
@@ -101,8 +105,11 @@ class ScanViewModel @Inject constructor(
      */
     fun prepareReview(): Boolean {
         val state = _uiState.value as? ScanUiState.Found ?: return false
-        // Empty successes stay in: review offers them as whole archives
-        val successes = state.items.mapNotNull { it.analysis as? ArchiveAnalysis.Success }
+        val successes = state.items.mapNotNull { item ->
+            (item.analysis as? ArchiveAnalysis.Success)?.takeIf {
+                it.roms.isNotEmpty() || it.fallbackMembers.isNotEmpty()
+            }
+        }
         if (successes.isEmpty() && state.looseRoms.isEmpty()) return false
         reviewSession.analyses = successes
         reviewSession.looseRoms = state.looseRoms

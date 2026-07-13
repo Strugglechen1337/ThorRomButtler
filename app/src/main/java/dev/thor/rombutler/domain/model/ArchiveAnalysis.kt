@@ -19,6 +19,12 @@ data class DetectedRom(
     val totalSizeBytes: Long,
 )
 
+/** A non-BIOS file inside an archive whose extension is not known as a ROM. */
+data class ArchiveMember(
+    val path: String,
+    val sizeBytes: Long,
+)
+
 /**
  * Outcome of analyzing one archive WITHOUT extracting it.
  */
@@ -34,12 +40,16 @@ sealed interface ArchiveAnalysis {
      * @property otherExtensions distinct extensions of remaining entries no
      *   system claims — shown when [roms] is empty so users see WHY nothing
      *   was detected (e.g. an Amiga archive on a v0.1 system list).
+     * @property fallbackMembers non-BIOS files offered for manual assignment
+     *   when no known ROM extension was found. They remain archive entries so
+     *   non-arcade archives can still be extracted instead of moved whole.
      */
     data class Success(
         override val archive: RomArchive,
         val roms: List<DetectedRom>,
         val ignoredBiosCount: Int = 0,
         val otherExtensions: List<String> = emptyList(),
+        val fallbackMembers: List<ArchiveMember> = emptyList(),
     ) : ArchiveAnalysis
 
     /** Container format is recognized but not readable (RAR5). */

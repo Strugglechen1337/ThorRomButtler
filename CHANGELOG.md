@@ -2,6 +2,31 @@
 
 All notable user-facing changes are documented here.
 
+## 1.4.1
+
+### Deutsch
+
+- Fehler behoben, durch den ein lesbares Archiv ohne automatisch erkannte
+  ROM-Endung nach manueller Systemwahl als komplette Datei in den ROM-Ordner
+  verschoben wurde. Betroffen waren insbesondere 7z-Archive mit unbekannten
+  oder eigenen Dateiendungen.
+- Der Analyzer behält solche internen Dateien jetzt für die manuelle Zuordnung
+  als entpackbare Archiveinträge bei. 7z- und RAR4-Archive werden dadurch auch
+  in diesem Fallback-Fall regulär entpackt.
+- Die Ausnahme ist jetzt eng gefasst: Nur ein ZIP, das ausdrücklich Arcade
+  oder Neo Geo zugeordnet wurde, bleibt als vollständiges ROM-Set gepackt.
+
+### English
+
+- Fixed a bug where a readable archive without an automatically recognized ROM
+  extension was moved as a complete file after manual system assignment. This
+  particularly affected 7z archives with unknown or custom file extensions.
+- The analyzer now preserves those internal files as extractable archive
+  entries for manual assignment. 7z and RAR4 archives are therefore extracted
+  normally in this fallback case as well.
+- The exception is now deliberately narrow: only a ZIP explicitly assigned to
+  Arcade or Neo Geo remains packed as a complete ROM set.
+
 ## 1.4.0
 
 - Added a ROM patcher for IPS/UPS/BPS patches (fan translations,

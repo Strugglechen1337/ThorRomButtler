@@ -5,6 +5,7 @@ import dev.thor.rombutler.domain.detection.BiosDetector
 import dev.thor.rombutler.domain.detection.DetectionEngine
 import dev.thor.rombutler.domain.detection.RomFileGrouper
 import dev.thor.rombutler.domain.model.ArchiveAnalysis
+import dev.thor.rombutler.domain.model.ArchiveMember
 import dev.thor.rombutler.domain.model.Confidence
 import dev.thor.rombutler.domain.model.DetectedRom
 import dev.thor.rombutler.domain.model.RomArchive
@@ -126,6 +127,11 @@ class CommonsArchiveAnalyzer @Inject constructor(
                 roms = roms,
                 ignoredBiosCount = biosEntries.size,
                 otherExtensions = otherExtensions,
+                fallbackMembers = if (roms.isEmpty()) {
+                    gameCandidates.map { ArchiveMember(it.path, it.sizeBytes) }
+                } else {
+                    emptyList()
+                },
             )
         } catch (e: Exception) {
             ArchiveAnalysis.Failed(archive, e.toUserMessage())

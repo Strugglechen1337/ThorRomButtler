@@ -51,8 +51,9 @@ läuft aber auf jedem Android-Smartphone ab Android 13.
   Prüfung gesichert. Speicherplatz wird vorab geprüft; Quellarchive bleiben
   standardmäßig erhalten und können optional gelöscht oder nach
   `.thor_trash` verschoben werden.
-- 🕹️ **Arcade-Sets bleiben gepackt**: MAME-/Neo-Geo-ZIPs werden als Ganzes
-  nach `roms/arcade` bzw. `roms/neogeo` verschoben
+- 🕹️ **Arcade-Sets bleiben gepackt**: ZIPs, die ausdrücklich Arcade oder
+  Neo Geo zugeordnet werden, wandern als Ganzes nach `roms/arcade` bzw.
+  `roms/neogeo`. 7z-/RAR-Archive werden dagegen immer entpackt.
 - 🗂️ **ES-DE-Ordnerkonvention**: `roms/nes`, `roms/psx`, `roms/dreamcast/<Spiel>/`, ...
 - 👁️ **Wächter-Modus** (optional): prüft den Download-Ordner im Hintergrund
   und benachrichtigt bei neuen Funden — einsortiert wird weiterhin nur nach
@@ -225,8 +226,9 @@ newer.
   transaction: existing ROMs stay backed up until verification succeeds.
   Storage space is checked beforehand; source archives are kept by default
   and can optionally be deleted or moved to `.thor_trash`.
-- 🕹️ **Arcade sets stay packed**: MAME and Neo Geo ZIPs are moved as complete
-  sets to `roms/arcade` or `roms/neogeo`
+- 🕹️ **Arcade sets stay packed**: ZIPs explicitly assigned to Arcade or
+  Neo Geo are moved as complete sets to `roms/arcade` or `roms/neogeo`.
+  7z and RAR archives are always extracted instead.
 - 🗂️ **ES-DE folder convention**: `roms/nes`, `roms/psx`, `roms/dreamcast/<game>/`, ...
 - 👁️ **Watcher mode** (optional): checks the download folder in the
   background and notifies you about new finds — sorting still only happens

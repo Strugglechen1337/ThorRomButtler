@@ -94,7 +94,8 @@ anders überlegst.
   verifiziert über Speichergrenzen hinweg.
 - **Wächter-Modus** (Einstellungen): überwacht den Download-Ordner im
   Hintergrund und meldet neue Funde per Benachrichtigung.
-- **Arcade/MAME-Sets** bleiben gepackt und werden als Ganzes verschoben.
+- **Arcade/MAME-Sets** bleiben nur als ZIP und bei ausdrücklicher Zuordnung zu
+  Arcade oder Neo Geo gepackt. 7z-/RAR-Archive werden immer entpackt.
 - **Eigene Ordnernamen** (z. B. `ps1` statt `psx`): Einstellungen →
   „Systemordner anpassen". Für Batocera/Knulli oder Onion OS (Miyoo) gibt
   es fertige **Frontend-Profile**, die alle Ordner in einem Schritt setzen.
@@ -224,7 +225,8 @@ your mind.
   app copies with verification across storage boundaries.
 - **Watcher mode** (settings): monitors the download folder in the background
   and notifies you about new finds.
-- **Arcade/MAME sets** stay zipped and are moved as a whole.
+- **Arcade/MAME sets** stay packed only as ZIPs explicitly assigned to Arcade
+  or Neo Geo. 7z and RAR archives are always extracted.
 - **Custom folder names** (e.g. `ps1` instead of `psx`): Settings →
   "Customize system folders". For Batocera/Knulli or Onion OS (Miyoo)
   there are ready-made **frontend profiles** that set all folders in one step.

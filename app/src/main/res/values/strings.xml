@@ -17,7 +17,7 @@
 
     <!-- What's new (update every release!) -->
     <string name="whatsnew_title">New in version %s</string>
-    <string name="whatsnew_body">• ROM patcher: apply IPS/UPS/BPS patches (fan translations, romhacks) directly on the device\n• Multi-disc games get an automatic .m3u playlist\n• Opt-in: rename verified ROMs to their official DAT name\n• Frontend profiles: folder names for Batocera/Knulli and Onion OS in one step\n\nFull details in the changelog on GitHub.</string>
+    <string name="whatsnew_body">• Fixed manually assigned 7z/RAR archives being moved without extraction\n• Unknown archive contents now remain extractable after a manual system choice\n• Only ZIP sets explicitly assigned to Arcade or Neo Geo stay packed\n\nFull details in the changelog on GitHub.</string>
 
     <!-- Setup screen -->
     <string name="setup_title">Setup</string>
@@ -87,7 +87,7 @@
     <string name="review_source">from %1$s · %2$s</string>
     <string name="review_source_with_members">from %1$s · %2$d files · %3$s</string>
     <string name="review_source_loose">Download folder (loose)</string>
-    <string name="review_source_whole">Whole archive (stays packed, e.g. arcade)</string>
+    <string name="review_source_archive_fallback">Archive contents (will be extracted; Arcade/Neo Geo ZIPs stay packed)</string>
     <string name="review_pick_system">Choose system</string>
     <string name="review_pick_other">Other …</string>
     <string name="review_accept_suggestion">Suggestion: %s</string>

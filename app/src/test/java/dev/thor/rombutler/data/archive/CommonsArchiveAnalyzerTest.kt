@@ -249,6 +249,9 @@ class CommonsArchiveAnalyzerTest {
         val success = analysis as ArchiveAnalysis.Success
         assertThat(success.roms).isEmpty()
         assertThat(success.otherExtensions).containsExactly("lha", "wad").inOrder()
+        assertThat(success.fallbackMembers.map { it.path })
+            .containsExactly("Turrican II.lha", "doom.wad")
+        assertThat(success.fallbackMembers.sumOf { it.sizeBytes }).isEqualTo(256L)
     }
 
     @Test

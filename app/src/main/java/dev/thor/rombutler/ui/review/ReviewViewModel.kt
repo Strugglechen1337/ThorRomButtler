@@ -41,12 +41,56 @@ sealed interface RomSource {
     /** Loose files in the download folder; `memberEntryPaths` are absolute. */
     data object LooseFiles : RomSource
 
-    /**
-     * A whole archive assigned as one unit (arcade ROM sets must stay
-     * zipped). Moved unextracted; `memberEntryPaths` = [archive path].
-     */
-    data class WholeArchive(val archiveFileName: String) : RomSource
+    /** Unknown archive contents awaiting a manual system choice. */
+    data class ArchiveFallback(
+        val archivePath: String,
+        val archiveType: ArchiveType,
+        val archiveFileName: String,
+        val archiveSizeBytes: Long,
+    ) : RomSource
 }
+
+internal data class ResolvedReviewTask(
+    val source: TaskSource,
+    val entryPaths: List<String>,
+    val expectedBytes: Long,
+    val keepsArchivePacked: Boolean,
+)
+
+/** Only ZIP sets explicitly assigned to Arcade/Neo Geo stay packed. */
+internal fun ReviewItem.resolveTask(system: SystemDefinition): ResolvedReviewTask =
+    when (val source = source) {
+        is RomSource.ArchiveEntry -> ResolvedReviewTask(
+            source = TaskSource.Archive(source.archivePath, source.archiveType),
+            entryPaths = rom.memberEntryPaths,
+            expectedBytes = rom.totalSizeBytes,
+            keepsArchivePacked = false,
+        )
+
+        RomSource.LooseFiles -> ResolvedReviewTask(
+            source = TaskSource.Loose,
+            entryPaths = rom.memberEntryPaths,
+            expectedBytes = rom.totalSizeBytes,
+            keepsArchivePacked = false,
+        )
+
+        is RomSource.ArchiveFallback -> {
+            val keepPacked = source.archiveType == ArchiveType.ZIP &&
+                system.id in PACKED_ARCHIVE_SYSTEM_IDS
+            ResolvedReviewTask(
+                source = if (keepPacked) {
+                    TaskSource.Loose
+                } else {
+                    TaskSource.Archive(source.archivePath, source.archiveType)
+                },
+                entryPaths = if (keepPacked) listOf(source.archivePath) else rom.memberEntryPaths,
+                expectedBytes = if (keepPacked) source.archiveSizeBytes else rom.totalSizeBytes,
+                keepsArchivePacked = keepPacked,
+            )
+        }
+    }
+
+private val PACKED_ARCHIVE_SYSTEM_IDS = setOf("arcade", "neogeo")
 
 /**
  * One ROM (group) awaiting user review.
@@ -149,20 +193,26 @@ class ReviewViewModel @Inject constructor(
     private fun loadFromSession() {
         val archiveItems = session.analyses.flatMap { analysis ->
             if (analysis.roms.isEmpty()) {
-                // No detectable ROMs inside: offer the archive as ONE unit
-                // (arcade/Neo-Geo sets must stay zipped and are moved whole).
+                val memberNames = analysis.fallbackMembers.map {
+                    it.path.replace('\\', '/').substringAfterLast('/')
+                }
                 listOf(
                     ReviewItem(
                         id = "whole::${analysis.archive.path}",
-                        source = RomSource.WholeArchive(analysis.archive.fileName),
+                        source = RomSource.ArchiveFallback(
+                            archivePath = analysis.archive.path,
+                            archiveType = analysis.archive.type,
+                            archiveFileName = analysis.archive.fileName,
+                            archiveSizeBytes = analysis.archive.sizeBytes,
+                        ),
                         rom = DetectedRom(
                             group = RomFileGroup(
                                 primary = analysis.archive.fileName,
-                                members = listOf(analysis.archive.fileName),
+                                members = memberNames,
                             ),
-                            memberEntryPaths = listOf(analysis.archive.path),
+                            memberEntryPaths = analysis.fallbackMembers.map { it.path },
                             detection = DetectionResult.UNKNOWN,
-                            totalSizeBytes = analysis.archive.sizeBytes,
+                            totalSizeBytes = analysis.fallbackMembers.sumOf { it.sizeBytes },
                         ),
                     ),
                 )
@@ -219,7 +269,13 @@ class ReviewViewModel @Inject constructor(
             val item = _uiState.value.items.find { it.id == itemId } ?: return@launch
             val path = targetDirFor(item, system)
             val exists = folderRepository.folderExists(system)
-            val occupied = folderRepository.anyFileExists(path, item.rom.group.members)
+            val resolved = item.resolveTask(system)
+            val targetNames = if (resolved.keepsArchivePacked) {
+                listOf((item.source as RomSource.ArchiveFallback).archiveFileName)
+            } else {
+                item.rom.group.members
+            }
+            val occupied = folderRepository.anyFileExists(path, targetNames)
             _uiState.update { state ->
                 state.copy(
                     items = state.items.map { current ->
@@ -348,25 +404,20 @@ class ReviewViewModel @Inject constructor(
             val tasks = assigned.mapNotNull { item ->
                 val system = registry.byId(item.selectedSystemId ?: return@mapNotNull null)
                     ?: return@mapNotNull null
+                val resolved = item.resolveTask(system)
                 ExtractionTask(
                     id = item.id,
                     primaryName = item.rom.group.primary,
-                    source = when (val source = item.source) {
-                        is RomSource.ArchiveEntry ->
-                            TaskSource.Archive(source.archivePath, source.archiveType)
-
-                        // Loose files and whole archives are moved as files
-                        is RomSource.LooseFiles, is RomSource.WholeArchive -> TaskSource.Loose
-                    },
-                    entryPaths = item.rom.memberEntryPaths,
+                    source = resolved.source,
+                    entryPaths = resolved.entryPaths,
                     targetDir = targetDirFor(item, system),
                     replaceExisting = item.overwrite,
-                    expectedBytes = item.rom.totalSizeBytes,
+                    expectedBytes = resolved.expectedBytes,
                 )
             }
 
             // An archive may be deleted once ALL its review items succeeded
-            val cleanups = state.items
+            val archiveEntryCleanups = state.items
                 .filter { it.source is RomSource.ArchiveEntry }
                 .groupBy { it.source as RomSource.ArchiveEntry }
                 .map { (source, items) ->
@@ -376,10 +427,21 @@ class ReviewViewModel @Inject constructor(
                         taskIds = items.map { it.id }.toSet(),
                     )
                 }
+            val fallbackCleanups = assigned.mapNotNull { item ->
+                val source = item.source as? RomSource.ArchiveFallback ?: return@mapNotNull null
+                val system = registry.byId(item.selectedSystemId ?: return@mapNotNull null)
+                    ?: return@mapNotNull null
+                if (item.resolveTask(system).keepsArchivePacked) return@mapNotNull null
+                ArchiveCleanup(
+                    archivePath = source.archivePath,
+                    archiveFileName = source.archiveFileName,
+                    taskIds = setOf(item.id),
+                )
+            }
 
             extractionManager.start(
                 tasks = tasks,
-                archiveCleanups = cleanups,
+                archiveCleanups = archiveEntryCleanups + fallbackCleanups,
                 deleteArchives = deleteArchives,
                 trashInsteadOfDelete = trashMode,
                 writeM3uPlaylists = currentSettings.writeM3uPlaylists,

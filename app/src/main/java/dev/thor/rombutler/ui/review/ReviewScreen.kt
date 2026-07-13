@@ -456,7 +456,7 @@ private fun ReviewItemCard(
             val sourceName = when (val source = item.source) {
                 is RomSource.ArchiveEntry -> source.archiveFileName
                 is RomSource.LooseFiles -> stringResource(R.string.review_source_loose)
-                is RomSource.WholeArchive -> stringResource(R.string.review_source_whole)
+                is RomSource.ArchiveFallback -> stringResource(R.string.review_source_archive_fallback)
             }
             Text(
                 text = if (members > 1) {

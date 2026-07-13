@@ -16,7 +16,7 @@
 
     <!-- What's new (pro Release aktualisieren!) -->
     <string name="whatsnew_title">Neu in Version %s</string>
-    <string name="whatsnew_body">• ROM-Patcher: IPS/UPS/BPS-Patches (Fan-Übersetzungen, Romhacks) direkt auf dem Gerät anwenden\n• Multi-Disc-Spiele bekommen automatisch eine .m3u-Playlist\n• Opt-in: verifizierte ROMs auf ihren offiziellen DAT-Namen umbenennen\n• Frontend-Profile: Ordnernamen für Batocera/Knulli und Onion OS in einem Schritt\n\nAlle Details im Changelog auf GitHub.</string>
+    <string name="whatsnew_body">• Manuell zugeordnete 7z-/RAR-Archive werden wieder entpackt statt ungeöffnet verschoben\n• Unbekannte Archivinhalte bleiben nach der Systemwahl entpackbar\n• Nur ausdrücklich Arcade oder Neo Geo zugeordnete ZIP-Sets bleiben gepackt\n\nAlle Details im Changelog auf GitHub.</string>
 
     <!-- Setup screen -->
     <string name="setup_title">Einrichtung</string>
@@ -85,7 +85,7 @@
     <string name="review_title">Zuordnung</string>
     <string name="review_source">aus %1$s · %2$s</string>
     <string name="review_source_loose">Download-Ordner (lose)</string>
-    <string name="review_source_whole">Ganzes Archiv (bleibt gepackt, z. B. Arcade)</string>
+    <string name="review_source_archive_fallback">Archivinhalt (wird entpackt; Arcade-/Neo-Geo-ZIPs bleiben gepackt)</string>
     <string name="review_accept_all">Alle übernehmen (%d)</string>
     <string name="review_duplicate_skip">Bereits im Zielordner vorhanden – wird übersprungen</string>
     <string name="review_duplicate_replace">Vorhandene Datei wird ERSETZT</string>
