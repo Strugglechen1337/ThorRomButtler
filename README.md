@@ -58,15 +58,20 @@ läuft aber auf jedem Android-Smartphone ab Android 13.
   und benachrichtigt bei neuen Funden — einsortiert wird weiterhin nur nach
   deiner Bestätigung
 - 🧹 **Bibliotheks-Prüfung**: Statistik pro System, Erkennung falsch
-  einsortierter ROMs und Duplikat-Übersicht (Regionen/Revisionen)
+  einsortierter ROMs und Duplikat-Übersicht (Regionen/Revisionen). Optional
+  findet ein speicherschonender SHA-256-Lauf bytegleiche Dateien.
 - 🏅 **DAT-Verifizierung** (optional): einsortierte ROMs per Prüfsumme
   gegen No-Intro/Redump-DAT-Dateien verifizieren
 - 📡 **LAN-Empfang**: ROMs kabellos vom PC-Browser direkt aufs Gerät
   (Einstellungen → „Empfang starten", einmalige Sitzungsadresse am PC öffnen,
-  Dateien reinziehen). Uploads werden erst nach vollständigem Schreiben
-  sichtbar; die Sitzung endet automatisch nach 30 Minuten. Auch als
-  Schnelleinstellungs-Kachel verfügbar: Ein Tipp zeigt die vollständige Adresse,
-  bietet Kopieren und kann den Empfang wieder beenden.
+  Dateien reinziehen). Die Browser-Warteschlange zeigt Fortschritt, Tempo und
+  Restzeit; Abbruch, Wiederholung und Fortsetzen unterbrochener großer Uploads
+  sind eingebaut. Dateien werden erst nach vollständigem Schreiben sichtbar.
+  QR-Code, Teilen und Verbindungsprüfung stehen in der Sitzungsansicht bereit;
+  die Sitzung endet automatisch nach 30 Minuten. Auch als
+  Schnelleinstellungs-Kachel verfügbar.
+- 🩺 **Diagnosebericht**: Geräte-, Speicher-, Berechtigungs- und LAN-Status
+  freiwillig über die Einstellungen teilen - ohne ROM-Namen oder Sitzungscode
 - 🔄 **Update-Check & In-App-Download** direkt aus den Einstellungen
 - 📜 **Aktions-Log mit Rückgängig**: jede Bewegung wird protokolliert und
   lässt sich direkt aus dem Log zurücknehmen
@@ -218,14 +223,19 @@ newer.
   background and notifies you about new finds — sorting still only happens
   after your confirmation
 - 🧹 **Library check**: per-system statistics, detection of misplaced
-  ROMs and a duplicate overview (regions/revisions)
+  ROMs and a duplicate overview (regions/revisions). An optional,
+  memory-efficient SHA-256 pass finds byte-identical files.
 - 🏅 **DAT verification** (optional): verify sorted ROMs by checksum
   against No-Intro/Redump DAT files
 - 📡 **LAN receive**: send ROMs wirelessly from your PC browser straight to
   the device (Settings → "Start receiving", open the one-time session address,
-  drop files). Uploads appear only after the copy completes, and the session
-  stops automatically after 30 minutes. Also available as a Quick Settings
-  tile: one tap shows the full address, offers copying, and can stop receiving.
+  drop files). The browser queue shows progress, speed, and ETA, with cancel,
+  retry, and resume support for interrupted large uploads. Files appear only
+  after the copy completes. The session screen adds a QR code, sharing, and a
+  connection check; receiving stops automatically after 30 minutes. Also
+  available as a Quick Settings tile.
+- 🩺 **Diagnostic report**: voluntarily share device, storage, permission, and
+  LAN status from Settings - without ROM names or the protected session code
 - 🔄 **Update check & in-app download** directly from Settings
 - 📜 **Action log with undo**: every move is recorded and can be reverted
   right from the log

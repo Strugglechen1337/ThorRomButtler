@@ -16,7 +16,7 @@
 
     <!-- What's new (pro Release aktualisieren!) -->
     <string name="whatsnew_title">Neu in Version %s</string>
-    <string name="whatsnew_body">• Die LAN-Kachel zeigt die vollständige Sitzungsadresse in einem eigenen Fenster\n• Der kurze Zufallscode bleibt direkt im Kachelnamen sichtbar\n• Adresse kopieren oder Empfang direkt im Fenster beenden\n\nAlle Details im Changelog auf GitHub.</string>
+    <string name="whatsnew_body">• Fortsetzbare LAN-Warteschlange mit Fortschritt, Tempo, Restzeit, Abbruch und Wiederholung\n• QR-Code, Teilen und Verbindungsprüfung für die aktive Sitzung\n• Optionale SHA-256-Suche nach bytegleichen ROM-Dateien\n• Datenschutzfreundlicher Diagnosebericht für Support\n\nAlle Details im Changelog auf GitHub.</string>
 
     <!-- Setup screen -->
     <string name="setup_title">Einrichtung</string>
@@ -154,6 +154,13 @@
     <string name="settings_library_all_good">Alles korrekt einsortiert. 🧹</string>
     <string name="settings_library_export">Sammlung exportieren (Markdown)</string>
     <string name="settings_library_duplicates">%d Spiele mehrfach vorhanden (Regionen/Revisionen) – Details im Export</string>
+    <string name="settings_library_exact_title">Exakte Duplikate</string>
+    <string name="settings_library_exact_hint">Optionaler SHA-256-Abgleich. Nur gleich große Dateien werden gelesen; bei großen Sammlungen kann das dauern.</string>
+    <string name="settings_library_exact_check">Bytegleiche Dateien suchen</string>
+    <string name="settings_library_exact_running">Dateiinhalte werden verglichen …</string>
+    <string name="settings_library_exact_summary">%1$d Gruppen · %2$d identische Dateien · bis zu %3$s freigebbar</string>
+    <string name="settings_library_exact_none">Keine bytegleichen ROM-Dateien gefunden.</string>
+    <string name="settings_library_exact_details">Dateipfade und SHA-256-Prüfsummen stehen im Sammlungsexport.</string>
     <string name="settings_system_packs_title">System-Packs &amp; eigene Systeme</string>
     <plurals name="settings_system_packs_count">
         <item quantity="one">1 eigenes System installiert</item>
@@ -215,9 +222,11 @@
     <string name="settings_system_pack_error_detail">%1$s (%2$s)</string>
     <string name="settings_battery_hint">Bei sehr langen Einsortier-Läufen kann aggressive Akku-Optimierung den Vorgang unterbrechen. Bei Problemen die App von der Optimierung ausnehmen:</string>
     <string name="settings_battery_button">Akku-Optimierung öffnen</string>
-    <string name="settings_crash_title">Absturzbericht vorhanden</string>
-    <string name="settings_crash_hint">Die App ist zuvor abgestürzt. Der Bericht liegt nur lokal auf dem Gerät – du kannst ihn freiwillig für ein GitHub-Issue teilen.</string>
-    <string name="settings_crash_share">Fehlerbericht teilen</string>
+    <string name="settings_diagnostics_title">Diagnose</string>
+    <string name="settings_diagnostics_hint">Erstellt einen Supportbericht mit App-, Geräte-, Speicher- und LAN-Status. ROM-Namen und der geschützte Sitzungscode werden weggelassen.</string>
+    <string name="settings_diagnostics_crash_included">Der letzte lokale Absturzbericht wird mit aufgenommen.</string>
+    <string name="settings_diagnostics_share">Bericht erstellen und teilen</string>
+    <string name="settings_diagnostics_failed">Der Diagnosebericht konnte nicht erstellt werden.</string>
     <string name="settings_version">Thor ROM Butler %s</string>
     <string name="settings_check_updates">Auf Updates prüfen</string>
     <string name="settings_up_to_date">Du hast die neueste Version.</string>
@@ -235,14 +244,33 @@
     <string name="receive_hint">ROMs direkt vom PC schicken: Empfang starten, die geschützte Sitzungsadresse am PC im Browser öffnen und Dateien hineinziehen. Android 17 fragt dafür einmal nach Zugriff auf das lokale Netzwerk. Der Empfang endet automatisch nach 30 Minuten. Tipp: Dafür gibt es auch eine Schnelleinstellungs-Kachel.</string>
     <string name="receive_running_hint">Einmalige Adresse am PC öffnen (gleiches WLAN, 30 Minuten gültig):</string>
     <string name="receive_start">Empfang starten</string>
+    <string name="receive_show_session">QR-Code und Verbindung anzeigen</string>
     <string name="receive_stop">Empfang beenden</string>
     <string name="receive_count">%d Datei(en) empfangen</string>
     <string name="receive_failed">Start fehlgeschlagen – ist das Gerät im WLAN und der Download-Ordner gesetzt?</string>
     <string name="receive_permission_denied">Der Zugriff auf das lokale Netzwerk wird nur während des LAN-Empfangs benötigt.</string>
     <string name="receive_tile_active">LAN: %s</string>
-    <string name="receive_tile_address">Diese Adresse am PC öffnen (gleiches WLAN):\n\n%1$s</string>
     <string name="receive_copy_address">Adresse kopieren</string>
     <string name="receive_address_copied">Adresse kopiert</string>
+    <string name="receive_share_address">Adresse teilen</string>
+    <string name="receive_qr_description">QR-Code für die geschützte Empfangsadresse</string>
+    <string name="receive_diagnostics_title">Verbindung prüfen</string>
+    <string name="receive_diagnostics_refresh">Prüfung wiederholen</string>
+    <string name="receive_diagnostics_permission">Lokales Netzwerk</string>
+    <string name="receive_diagnostics_network">Aktives Netzwerk</string>
+    <string name="receive_diagnostics_address">LAN-Adresse</string>
+    <string name="receive_diagnostics_folder">Download-Ordner</string>
+    <string name="receive_diagnostics_server">Empfangsserver</string>
+    <string name="receive_diagnostics_ok">Bereit</string>
+    <string name="receive_diagnostics_missing">Nicht verfügbar</string>
+    <string name="receive_diagnostics_wifi">WLAN</string>
+    <string name="receive_diagnostics_ethernet">Ethernet</string>
+    <string name="receive_diagnostics_other_network">Anderes Netzwerk</string>
+    <string name="receive_diagnostics_no_network">Kein aktives Netzwerk</string>
+    <string name="receive_diagnostics_free">%s frei</string>
+    <string name="receive_diagnostics_reachable">Erreichbar</string>
+    <string name="receive_diagnostics_unreachable">Nicht erreichbar</string>
+    <string name="receive_retry">Erneut versuchen</string>
     <string name="notification_channel_receive">LAN-Empfang</string>
     <string name="notification_receive_title">Empfangsmodus aktiv</string>
     <string name="notification_receive_text_count">%1$s · %2$d empfangen</string>

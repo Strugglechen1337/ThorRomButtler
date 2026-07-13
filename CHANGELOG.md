@@ -2,6 +2,46 @@
 
 All notable user-facing changes are documented here.
 
+## 1.3.0
+
+### Deutsch
+
+- Der LAN-Empfang überträgt Dateien jetzt in fortsetzbaren Blöcken. Die
+  Browser-Warteschlange zeigt pro Datei Fortschritt, Geschwindigkeit und
+  Restzeit und bietet Abbrechen sowie Wiederholen. Unterbrochene große Uploads
+  werden nach erneuter Auswahl derselben Datei fortgesetzt.
+- Unvollständige Uploads bleiben in einem versteckten Arbeitsordner und werden
+  erst nach vollständiger Übertragung atomar im Download-Ordner sichtbar.
+  Verwaiste Teildateien werden nach sieben Tagen entfernt.
+- Die Sitzungsansicht zeigt einen lokal erzeugten QR-Code und bietet Kopieren,
+  Teilen sowie eine Verbindungsprüfung für Berechtigung, Netzwerk, LAN-Adresse,
+  Zielordner und Server.
+- Die Bibliotheks-Prüfung kann optional gleich große ROM-Dateien per
+  Streaming-SHA-256 vergleichen. Bytegleiche Gruppen, Prüfsummen und das
+  mögliche Einsparpotenzial werden angezeigt und im Markdown-Export ergänzt;
+  die App löscht dabei nichts.
+- Ein freiwillig teilbarer Diagnosebericht erfasst App-, Android-, Geräte-,
+  Speicher-, Berechtigungs- und LAN-Status. ROM-Namen und geschützte
+  Sitzungscodes werden bewusst ausgelassen.
+
+### English
+
+- LAN receive now transfers files in resumable chunks. The browser queue shows
+  per-file progress, speed, and ETA with cancel and retry actions. Interrupted
+  large uploads continue when the same file is selected again.
+- Incomplete uploads stay in a hidden working directory and become visible in
+  Downloads only after an atomic final commit. Stale partial files are removed
+  after seven days.
+- The session view displays a locally generated QR code and adds copy, share,
+  and connection checks for permission, network, LAN address, target folder,
+  and server reachability.
+- The library check can optionally compare same-sized ROM files with streaming
+  SHA-256. Byte-identical groups, hashes, and reclaimable space are shown and
+  added to the Markdown export; the app never deletes them automatically.
+- A voluntarily shared diagnostic report captures app, Android, device,
+  storage, permission, and LAN status. ROM names and protected session codes
+  are deliberately omitted.
+
 ## 1.2.2
 
 ### Deutsch

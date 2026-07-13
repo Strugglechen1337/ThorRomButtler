@@ -37,15 +37,19 @@ Einstellungen ergänzen.
 
 **Am bequemsten: LAN-Empfang.** In den Einstellungen „Empfang starten",
 die einmalige Sitzungsadresse am PC im Browser öffnen (gleiches WLAN) und die
-Dateien einfach auf die Seite ziehen — ganz ohne Kabel. Unvollständige Uploads
-bleiben unsichtbar; der Empfang endet automatisch nach 30 Minuten. Unter
+Dateien einfach auf die Seite ziehen — ganz ohne Kabel. Die Warteschlange zeigt
+Fortschritt, Tempo und Restzeit. Abgebrochene oder unterbrochene Übertragungen
+lassen sich nach erneuter Auswahl derselben Datei fortsetzen; erst vollständig
+empfangene Dateien werden sichtbar. Der Empfang endet automatisch nach 30
+Minuten. Unter
 Android 17 die einmalige Abfrage für den Zugriff auf das lokale Netzwerk
 erlauben; sie erscheint erst beim Start des LAN-Empfangs. Noch schneller:
 Der LAN-Empfang lässt sich als Schnelleinstellungs-Kachel in die
 Statusleiste legen (Statusleiste ausklappen → Stift → „LAN-Empfang"
 hinzufügen). Ein Tipp startet den Empfang und zeigt die vollständige Adresse in
-einem kleinen Fenster; dort kannst du sie kopieren oder den Empfang beenden.
-Der kurze Sitzungscode steht zusätzlich im Kachelnamen. Alternativ kannst du
+einer Sitzungsansicht; dort findest du QR-Code, Teilen, Kopieren und eine
+Verbindungsprüfung oder kannst den Empfang beenden. Der kurze Sitzungscode
+steht zusätzlich im Kachelnamen. Alternativ kannst du
 Dateien aus anderen Apps per
 „Teilen → Thor ROM Butler" schicken.
 
@@ -102,6 +106,12 @@ anders überlegst.
   unbekannt.
 - **Einstellungen sichern**: Der JSON-Import wird erst vollständig geprüft und
   danach gemeinsam übernommen. Eine fehlerhafte Sicherung ändert nichts.
+- **Exakte Duplikate**: Nach der normalen Bibliotheks-Prüfung kannst du optional
+  einen SHA-256-Abgleich starten. Nur gleich große Kandidaten werden gelesen;
+  gelöscht wird nichts. Pfade und Prüfsummen stehen im Sammlungsexport.
+- **Diagnose teilen**: Der Diagnosebericht in den Einstellungen sammelt App-,
+  Geräte-, Speicher-, Berechtigungs- und LAN-Status. ROM-Namen und der geheime
+  Sitzungscode werden nicht aufgenommen.
 - **Gamepad**: D-Pad/Stick navigiert, A bestätigt, B geht zurück —
   Touch funktioniert parallel weiter.
 - **Dump-Verifizierung**: Ordner mit No-Intro/Redump-`.dat`-Dateien in den
@@ -151,14 +161,17 @@ settings.
 
 **Most convenient: LAN receive.** Tap "Start receiving" in Settings, open
 the one-time session address in a browser on your PC (same Wi-Fi) and simply
-drop the files onto the page — no cable at all. Incomplete uploads stay hidden,
-and receiving stops automatically after 30 minutes. On Android 17, allow the
+drop the files onto the page — no cable at all. The queue shows progress,
+speed, and ETA. Cancelled or interrupted transfers resume when the same file is
+selected again; files stay hidden until fully received. Receiving stops
+automatically after 30 minutes. On Android 17, allow the
 one-time local network access prompt; it is shown only when LAN receive is
 started. Even quicker: LAN receive is
 available as a Quick Settings tile (expand the notification shade → pencil
 icon → add "LAN receive"). One tap starts receiving and shows the complete
-address in a small window, where it can be copied or receiving can be stopped.
-The short session code also remains visible in the tile label. Alternatively,
+address in a session view with a QR code, sharing, copying, and a connection
+check, or receiving can be stopped there. The short session code also remains
+visible in the tile label. Alternatively,
 send files from other apps via
 "Share → Thor ROM Butler".
 
@@ -212,6 +225,12 @@ your mind.
   automatic assignment.
 - **Settings backup**: the JSON import is validated completely and then applied
   as one update. An invalid backup changes nothing.
+- **Exact duplicates**: after the regular library check, optionally run a
+  SHA-256 comparison. Only same-sized candidates are read and nothing is
+  deleted. Paths and hashes are included in the collection export.
+- **Share diagnostics**: the report in Settings collects app, device, storage,
+  permission, and LAN status. ROM names and the protected session code are
+  omitted.
 - **Gamepad**: D-pad/stick navigates, A confirms, B goes back — touch
   keeps working alongside.
 - **Dump verification**: pick a folder with No-Intro/Redump `.dat` files in

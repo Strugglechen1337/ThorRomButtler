@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dev.thor.rombutler.data.diagnostics.DiagnosticReportBuilder
 import dev.thor.rombutler.data.log.CrashLog
 import dev.thor.rombutler.data.settings.SettingsBackupCodec
 import dev.thor.rombutler.data.update.GitHubUpdateChecker
@@ -19,6 +20,7 @@ import dev.thor.rombutler.domain.model.SystemExtensionConflict
 import dev.thor.rombutler.domain.model.SystemPack
 import dev.thor.rombutler.domain.model.SystemPackDecodeResult
 import dev.thor.rombutler.domain.model.SystemPackError
+import dev.thor.rombutler.domain.repository.ExactDuplicateReport
 import dev.thor.rombutler.domain.repository.LibraryReport
 import dev.thor.rombutler.domain.repository.LibraryRepository
 import dev.thor.rombutler.ui.review.ReviewSession
@@ -30,6 +32,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -47,6 +50,14 @@ sealed interface LibraryCheckState {
     data object Running : LibraryCheckState
     data class Done(val report: LibraryReport) : LibraryCheckState
     data class Failed(val message: String) : LibraryCheckState
+}
+
+/** State of the optional SHA-256 duplicate scan. */
+sealed interface ExactDuplicateState {
+    data object Idle : ExactDuplicateState
+    data object Running : ExactDuplicateState
+    data class Done(val report: ExactDuplicateReport) : ExactDuplicateState
+    data class Failed(val message: String) : ExactDuplicateState
 }
 
 enum class SystemPackAction {
@@ -89,11 +100,15 @@ class SettingsViewModel @Inject constructor(
     private val libraryRepository: LibraryRepository,
     private val reviewSession: ReviewSession,
     private val receiveManager: dev.thor.rombutler.receive.ReceiveManager,
+    private val diagnosticReportBuilder: DiagnosticReportBuilder,
     val registry: SystemRegistry,
 ) : ViewModel() {
 
     private val _libraryState = MutableStateFlow<LibraryCheckState>(LibraryCheckState.Idle)
     val libraryState: StateFlow<LibraryCheckState> = _libraryState.asStateFlow()
+    private val _exactDuplicateState = MutableStateFlow<ExactDuplicateState>(ExactDuplicateState.Idle)
+    val exactDuplicateState: StateFlow<ExactDuplicateState> = _exactDuplicateState.asStateFlow()
+    private var exactDuplicateJob: Job? = null
 
     val registryState = registry.state
     private val _systemPackResult = MutableStateFlow<SystemPackActionResult?>(null)
@@ -106,10 +121,13 @@ class SettingsViewModel @Inject constructor(
     /** True when a crash was recorded — shows the share row in settings. */
     val hasCrashReport: Boolean = crashLog.exists()
 
-    /** Crash text for the share sheet (last ~100 KB). */
-    fun crashReportText(): String? = crashLog.read()
-
-    fun clearCrashReport() = crashLog.clear()
+    fun buildDiagnosticReport(onReady: (String) -> Unit, onFailed: () -> Unit) {
+        viewModelScope.launch {
+            runCatching { diagnosticReportBuilder.build() }
+                .onSuccess(onReady)
+                .onFailure { onFailed() }
+        }
+    }
 
     fun consumeSystemPackResult() {
         _systemPackResult.value = null
@@ -156,9 +174,9 @@ class SettingsViewModel @Inject constructor(
     /** LAN receive mode (see [ReceiveManager]). */
     val receiveState = receiveManager.state
 
-    fun startReceive(onFailed: () -> Unit) {
+    fun startReceive(onStarted: () -> Unit, onFailed: () -> Unit) {
         viewModelScope.launch {
-            if (!receiveManager.start()) onFailed()
+            if (receiveManager.start()) onStarted() else onFailed()
         }
     }
 
@@ -235,6 +253,8 @@ class SettingsViewModel @Inject constructor(
     /** Scans the ROM library: per-system statistics + misplaced ROMs. */
     fun checkLibrary() {
         if (_libraryState.value == LibraryCheckState.Running) return
+        exactDuplicateJob?.cancel()
+        _exactDuplicateState.value = ExactDuplicateState.Idle
         _libraryState.value = LibraryCheckState.Running
         viewModelScope.launch {
             _libraryState.value = runCatching { libraryRepository.check() }
@@ -245,11 +265,27 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun findExactDuplicates() {
+        if (_exactDuplicateState.value == ExactDuplicateState.Running) return
+        _exactDuplicateState.value = ExactDuplicateState.Running
+        exactDuplicateJob = viewModelScope.launch {
+            _exactDuplicateState.value = runCatching { libraryRepository.findExactDuplicates() }
+                .fold(
+                    onSuccess = { ExactDuplicateState.Done(it) },
+                    onFailure = { ExactDuplicateState.Failed(it.message ?: "?") },
+                )
+        }
+    }
+
     /**
      * Writes the library report as a Markdown list into the download
      * folder (`ThorRomButler-Sammlung.md`).
      */
-    fun exportLibrary(report: LibraryReport, onResult: (Boolean) -> Unit) {
+    fun exportLibrary(
+        report: LibraryReport,
+        exactDuplicates: ExactDuplicateReport?,
+        onResult: (Boolean) -> Unit,
+    ) {
         viewModelScope.launch {
             val result = runCatching {
                 val dir = settings.value.downloadPath ?: error("Kein Download-Ordner")
@@ -269,6 +305,23 @@ class SettingsViewModel @Inject constructor(
                         sb.appendLine("- **${dup.title}** (${dup.systemName})")
                         for (variant in dup.variants) {
                             sb.appendLine("  - $variant")
+                        }
+                    }
+                }
+                if (exactDuplicates != null) {
+                    sb.appendLine()
+                    sb.appendLine("## Exakte Duplikate / Exact duplicates (SHA-256)")
+                    sb.appendLine()
+                    sb.appendLine(
+                        "${exactDuplicates.groups.size} Gruppen / groups | " +
+                            "${exactDuplicates.duplicateFiles} Dateien / files | " +
+                            "${formatBytes(exactDuplicates.reclaimableBytes)} freigebbar / reclaimable",
+                    )
+                    for (duplicate in exactDuplicates.groups) {
+                        sb.appendLine()
+                        sb.appendLine("- **${formatBytes(duplicate.sizeBytes)}** | `${duplicate.sha256}`")
+                        for (file in duplicate.files) {
+                            sb.appendLine("  - `$file`")
                         }
                     }
                 }

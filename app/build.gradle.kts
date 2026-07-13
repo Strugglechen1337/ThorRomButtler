@@ -26,8 +26,8 @@ android {
         applicationId = "dev.thor.rombutler"
         minSdk = 33
         targetSdk = 37
-        versionCode = 19
-        versionName = "1.2.2"
+        versionCode = 20
+        versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -102,6 +102,7 @@ dependencies {
 
     // LAN receive mode
     implementation(libs.nanohttpd)
+    implementation(libs.zxing.core)
 
     implementation(libs.commons.compress)
     implementation(libs.xz)

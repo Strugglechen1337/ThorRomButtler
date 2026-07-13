@@ -68,6 +68,17 @@ object IncomingFile {
         }
     }
 
+    /** Exposes a fully verified hidden upload without copying multi-GB data again. */
+    fun commitPartial(partial: File, target: File) {
+        if (!partial.isFile) throw IOException("Teildatei fehlt")
+        val parent = target.parentFile ?: throw IOException("Zielordner fehlt")
+        if (!parent.isDirectory && !parent.mkdirs()) {
+            throw IOException("Zielordner konnte nicht angelegt werden")
+        }
+        if (target.exists()) throw IOException("Zieldatei existiert bereits")
+        moveWithoutReplacing(partial, target)
+    }
+
     private fun moveWithoutReplacing(partial: File, target: File) {
         try {
             Files.move(partial.toPath(), target.toPath(), StandardCopyOption.ATOMIC_MOVE)

@@ -24,6 +24,21 @@ data class DuplicateGroup(
     val variants: List<String>,
 )
 
+/** Files with identical size and SHA-256 content hash. */
+data class ExactDuplicateGroup(
+    val sha256: String,
+    val sizeBytes: Long,
+    val files: List<String>,
+)
+
+/** Result of the optional, potentially long-running exact duplicate scan. */
+data class ExactDuplicateReport(
+    val candidateFiles: Int,
+    val duplicateFiles: Int,
+    val reclaimableBytes: Long,
+    val groups: List<ExactDuplicateGroup>,
+)
+
 /**
  * Result of a library check.
  *
@@ -47,4 +62,7 @@ interface LibraryRepository {
 
     /** Walks the library, collects statistics and finds misplaced ROMs. */
     suspend fun check(): LibraryReport
+
+    /** Hashes only same-sized candidates and reports byte-identical files. */
+    suspend fun findExactDuplicates(): ExactDuplicateReport
 }

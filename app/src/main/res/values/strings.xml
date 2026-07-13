@@ -17,7 +17,7 @@
 
     <!-- What's new (update every release!) -->
     <string name="whatsnew_title">New in version %s</string>
-    <string name="whatsnew_body">• The LAN tile now shows the full session address in its own window\n• The short random code remains visible in the tile label\n• Copy the address or stop receiving directly from the window\n\nFull details in the changelog on GitHub.</string>
+    <string name="whatsnew_body">• Resumable LAN upload queue with progress, speed, ETA, cancel and retry\n• QR code, sharing and connection check for the active session\n• Optional SHA-256 scan for byte-identical ROM files\n• Privacy-friendly diagnostic report for support\n\nFull details in the changelog on GitHub.</string>
 
     <!-- Setup screen -->
     <string name="setup_title">Setup</string>
@@ -155,6 +155,13 @@
     <string name="settings_library_all_good">Everything sorted correctly. 🧹</string>
     <string name="settings_library_export">Export collection (Markdown)</string>
     <string name="settings_library_duplicates">%d games present multiple times (regions/revisions) – details in the export</string>
+    <string name="settings_library_exact_title">Exact duplicates</string>
+    <string name="settings_library_exact_hint">Optional SHA-256 check. Only same-sized files are read; this can take a while for large collections.</string>
+    <string name="settings_library_exact_check">Find byte-identical files</string>
+    <string name="settings_library_exact_running">Comparing file contents …</string>
+    <string name="settings_library_exact_summary">%1$d groups · %2$d identical files · up to %3$s reclaimable</string>
+    <string name="settings_library_exact_none">No byte-identical ROM files found.</string>
+    <string name="settings_library_exact_details">File paths and SHA-256 hashes are included in the collection export.</string>
     <string name="settings_system_packs_title">System packs &amp; custom systems</string>
     <plurals name="settings_system_packs_count">
         <item quantity="one">1 custom system installed</item>
@@ -216,9 +223,11 @@
     <string name="settings_system_pack_error_detail">%1$s (%2$s)</string>
     <string name="settings_battery_hint">Aggressive battery optimization can interrupt very long sorting runs. If that happens, exempt the app from optimization:</string>
     <string name="settings_battery_button">Open battery optimization</string>
-    <string name="settings_crash_title">Crash report available</string>
-    <string name="settings_crash_hint">The app crashed earlier. The report is stored locally only – you can share it voluntarily for a GitHub issue.</string>
-    <string name="settings_crash_share">Share crash report</string>
+    <string name="settings_diagnostics_title">Diagnostics</string>
+    <string name="settings_diagnostics_hint">Creates a support report with app, device, storage and LAN status. ROM names and the protected session code are omitted.</string>
+    <string name="settings_diagnostics_crash_included">The last local crash log will be included.</string>
+    <string name="settings_diagnostics_share">Create and share report</string>
+    <string name="settings_diagnostics_failed">Could not create the diagnostic report.</string>
     <string name="settings_version">Thor ROM Butler %s</string>
     <string name="settings_check_updates">Check for updates</string>
     <string name="settings_up_to_date">You have the latest version.</string>
@@ -236,14 +245,33 @@
     <string name="receive_hint">Send ROMs straight from your PC: start receiving, open the protected session address in a browser, and drop files. Android 17 asks once for local network access. Receiving stops automatically after 30 minutes. Tip: there is also a Quick Settings tile for this.</string>
     <string name="receive_running_hint">Open this one-time address on your PC (same Wi-Fi, valid for 30 minutes):</string>
     <string name="receive_start">Start receiving</string>
+    <string name="receive_show_session">Show QR code and connection</string>
     <string name="receive_stop">Stop receiving</string>
     <string name="receive_count">%d file(s) received</string>
     <string name="receive_failed">Start failed – is the device on Wi-Fi and the download folder set?</string>
     <string name="receive_permission_denied">Local network access is required only while LAN receive is active.</string>
     <string name="receive_tile_active">LAN: %s</string>
-    <string name="receive_tile_address">Open this address on your PC (same Wi-Fi):\n\n%1$s</string>
     <string name="receive_copy_address">Copy address</string>
     <string name="receive_address_copied">Address copied</string>
+    <string name="receive_share_address">Share address</string>
+    <string name="receive_qr_description">QR code for the protected receive address</string>
+    <string name="receive_diagnostics_title">Connection check</string>
+    <string name="receive_diagnostics_refresh">Run check again</string>
+    <string name="receive_diagnostics_permission">Local network permission</string>
+    <string name="receive_diagnostics_network">Active network</string>
+    <string name="receive_diagnostics_address">LAN address</string>
+    <string name="receive_diagnostics_folder">Download folder</string>
+    <string name="receive_diagnostics_server">Receive server</string>
+    <string name="receive_diagnostics_ok">Ready</string>
+    <string name="receive_diagnostics_missing">Not available</string>
+    <string name="receive_diagnostics_wifi">Wi-Fi</string>
+    <string name="receive_diagnostics_ethernet">Ethernet</string>
+    <string name="receive_diagnostics_other_network">Other network</string>
+    <string name="receive_diagnostics_no_network">No active network</string>
+    <string name="receive_diagnostics_free">%s free</string>
+    <string name="receive_diagnostics_reachable">Reachable</string>
+    <string name="receive_diagnostics_unreachable">Not reachable</string>
+    <string name="receive_retry">Try again</string>
     <string name="notification_channel_receive">LAN receive</string>
     <string name="notification_receive_title">Receive mode active</string>
     <string name="notification_receive_text_count">%1$s · %2$d received</string>

@@ -9,6 +9,7 @@ import dev.thor.rombutler.domain.model.Confidence
 import dev.thor.rombutler.domain.model.DetectedRom
 import dev.thor.rombutler.domain.repository.LibraryReport
 import dev.thor.rombutler.domain.repository.LibraryRepository
+import dev.thor.rombutler.domain.repository.ExactDuplicateReport
 import dev.thor.rombutler.domain.repository.SettingsRepository
 import dev.thor.rombutler.domain.repository.SystemStat
 import kotlinx.coroutines.CoroutineDispatcher
@@ -34,6 +35,7 @@ class LibraryChecker @Inject constructor(
     private val engine: DetectionEngine,
     private val grouper: RomFileGrouper,
     private val biosDetector: BiosDetector,
+    private val exactDuplicateFinder: ExactDuplicateFinder,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : LibraryRepository {
 
@@ -87,7 +89,7 @@ class LibraryChecker @Inject constructor(
                         val detection = detect(primary)
                         if (detection.confidence == Confidence.CERTAIN &&
                             detection.system != null &&
-                            detection.system!!.id != system.id
+                            detection.system.id != system.id
                         ) {
                             misplaced += DetectedRom(
                                 group = group,
@@ -107,6 +109,24 @@ class LibraryChecker @Inject constructor(
             misplaced = misplaced.sortedBy { it.group.primary.lowercase() },
             duplicates = duplicates.sortedBy { it.title },
         )
+    }
+
+    override suspend fun findExactDuplicates(): ExactDuplicateReport = withContext(ioDispatcher) {
+        val settings = settingsRepository.settings.first()
+        val basePath = settings.romBasePath
+            ?: throw IllegalStateException("ROM-Basisordner ist nicht konfiguriert")
+        val base = File(basePath)
+        if (!base.isDirectory) throw IllegalStateException("ROM-Basisordner nicht gefunden: $basePath")
+
+        val knownFolders = registry.systems.mapTo(mutableSetOf()) { system ->
+            (settings.folderOverrides[system.id] ?: system.esdeFolder).lowercase()
+        }
+        val files = mutableListOf<File>()
+        base.listFiles()
+            .orEmpty()
+            .filter { it.isDirectory && it.name.lowercase() in knownFolders }
+            .forEach { collectRomFiles(it, depth = 0, into = files) }
+        exactDuplicateFinder.find(base, files)
     }
 
     private fun collectRomFiles(dir: File, depth: Int, into: MutableList<File>) {

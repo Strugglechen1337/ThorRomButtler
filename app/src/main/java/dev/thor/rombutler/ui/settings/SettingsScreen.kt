@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Folder
@@ -59,6 +60,7 @@ import dev.thor.rombutler.R
 import dev.thor.rombutler.domain.detection.SystemPackCodec
 import dev.thor.rombutler.domain.model.SystemPackError
 import dev.thor.rombutler.receive.LocalNetworkPermission
+import dev.thor.rombutler.receive.ReceivePermissionActivity
 import dev.thor.rombutler.ui.components.FolderPickerDialog
 
 /**
@@ -74,6 +76,7 @@ fun SettingsScreen(
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val updateState by viewModel.updateState.collectAsStateWithLifecycle()
     val libraryState by viewModel.libraryState.collectAsStateWithLifecycle()
+    val exactDuplicateState by viewModel.exactDuplicateState.collectAsStateWithLifecycle()
     val receiveState by viewModel.receiveState.collectAsStateWithLifecycle()
     val registryState by viewModel.registryState.collectAsStateWithLifecycle()
     val systemPackResult by viewModel.systemPackResult.collectAsStateWithLifecycle()
@@ -82,13 +85,18 @@ fun SettingsScreen(
     val resources = LocalResources.current
 
     fun startReceive() {
-        viewModel.startReceive {
-            android.widget.Toast.makeText(
-                context,
-                resources.getString(R.string.receive_failed),
-                android.widget.Toast.LENGTH_LONG,
-            ).show()
-        }
+        viewModel.startReceive(
+            onStarted = {
+                context.startActivity(Intent(context, ReceivePermissionActivity::class.java))
+            },
+            onFailed = {
+                android.widget.Toast.makeText(
+                    context,
+                    resources.getString(R.string.receive_failed),
+                    android.widget.Toast.LENGTH_LONG,
+                ).show()
+            },
+        )
     }
 
     val localNetworkPermissionLauncher = rememberLauncherForActivityResult(
@@ -438,7 +446,7 @@ fun SettingsScreen(
                         Spacer(Modifier.size(8.dp))
                         Text(
                             text = rs.url,
-                            style = MaterialTheme.typography.headlineMedium,
+                            style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.primary,
                         )
                         if (rs.receivedCount > 0) {
@@ -450,6 +458,15 @@ fun SettingsScreen(
                         }
                         Spacer(Modifier.size(10.dp))
                         Button(
+                            onClick = {
+                                context.startActivity(
+                                    Intent(context, ReceivePermissionActivity::class.java),
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) { Text(stringResource(R.string.receive_show_session)) }
+                        Spacer(Modifier.size(6.dp))
+                        OutlinedButton(
                             onClick = viewModel::stopReceive,
                             modifier = Modifier.fillMaxWidth(),
                         ) { Text(stringResource(R.string.receive_stop)) }
@@ -534,6 +551,82 @@ fun SettingsScreen(
                                 color = MaterialTheme.colorScheme.secondary,
                             )
                         }
+                        Spacer(Modifier.size(14.dp))
+                        Text(
+                            text = stringResource(R.string.settings_library_exact_title),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            text = stringResource(R.string.settings_library_exact_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(Modifier.size(8.dp))
+                        when (val exact = exactDuplicateState) {
+                            ExactDuplicateState.Idle -> OutlinedButton(
+                                onClick = viewModel::findExactDuplicates,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) { Text(stringResource(R.string.settings_library_exact_check)) }
+
+                            ExactDuplicateState.Running -> Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    strokeWidth = 2.dp,
+                                )
+                                Spacer(Modifier.width(10.dp))
+                                Text(stringResource(R.string.settings_library_exact_running))
+                            }
+
+                            is ExactDuplicateState.Failed -> Column {
+                                Text(
+                                    text = exact.message,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.error,
+                                )
+                                OutlinedButton(
+                                    onClick = viewModel::findExactDuplicates,
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) { Text(stringResource(R.string.settings_library_exact_check)) }
+                            }
+
+                            is ExactDuplicateState.Done -> {
+                                if (exact.report.groups.isEmpty()) {
+                                    Text(
+                                        text = stringResource(R.string.settings_library_exact_none),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.secondary,
+                                    )
+                                } else {
+                                    Text(
+                                        text = stringResource(
+                                            R.string.settings_library_exact_summary,
+                                            exact.report.groups.size,
+                                            exact.report.duplicateFiles,
+                                            dev.thor.rombutler.ui.components.formatFileSize(
+                                                exact.report.reclaimableBytes,
+                                            ),
+                                        ),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.secondary,
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.settings_library_exact_details),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                Spacer(Modifier.size(6.dp))
+                                OutlinedButton(
+                                    onClick = viewModel::findExactDuplicates,
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) { Text(stringResource(R.string.settings_library_exact_check)) }
+                            }
+                        }
                         Spacer(Modifier.size(10.dp))
                         if (report.misplaced.isNotEmpty()) {
                             Button(
@@ -559,7 +652,10 @@ fun SettingsScreen(
                         Spacer(Modifier.size(6.dp))
                         OutlinedButton(
                             onClick = {
-                                viewModel.exportLibrary(report) { ok ->
+                                viewModel.exportLibrary(
+                                    report = report,
+                                    exactDuplicates = (exactDuplicateState as? ExactDuplicateState.Done)?.report,
+                                ) { ok ->
                                     android.widget.Toast.makeText(
                                         context,
                                         resources.getString(
@@ -694,34 +790,57 @@ fun SettingsScreen(
                 }
             }
 
-            // Crash report (only when one was recorded)
-            if (viewModel.hasCrashReport) {
-                SettingsCard {
+            // Explicitly shared, privacy-friendly support report.
+            SettingsCard {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Filled.BugReport,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp),
+                    )
+                    Spacer(Modifier.width(12.dp))
                     Text(
-                        text = stringResource(R.string.settings_crash_title),
+                        text = stringResource(R.string.settings_diagnostics_title),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
+                }
+                Text(
+                    text = stringResource(R.string.settings_diagnostics_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (viewModel.hasCrashReport) {
                     Text(
-                        text = stringResource(R.string.settings_crash_hint),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        text = stringResource(R.string.settings_diagnostics_crash_included),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary,
                     )
-                    Spacer(Modifier.size(10.dp))
-                    OutlinedButton(
-                        onClick = {
-                            viewModel.crashReportText()?.let { text ->
+                }
+                Spacer(Modifier.size(10.dp))
+                OutlinedButton(
+                    onClick = {
+                        viewModel.buildDiagnosticReport(
+                            onReady = { text ->
                                 val send = Intent(Intent.ACTION_SEND)
                                     .setType("text/plain")
-                                    .putExtra(Intent.EXTRA_SUBJECT, "Thor ROM Butler crash report")
+                                    .putExtra(Intent.EXTRA_SUBJECT, "Thor ROM Butler diagnostics")
                                     .putExtra(Intent.EXTRA_TEXT, text)
                                 context.startActivity(Intent.createChooser(send, null))
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(stringResource(R.string.settings_crash_share))
-                    }
+                            },
+                            onFailed = {
+                                android.widget.Toast.makeText(
+                                    context,
+                                    resources.getString(R.string.settings_diagnostics_failed),
+                                    android.widget.Toast.LENGTH_LONG,
+                                ).show()
+                            },
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.settings_diagnostics_share))
                 }
             }
 

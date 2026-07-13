@@ -54,7 +54,7 @@
             android:name=".receive.ReceivePermissionActivity"
             android:excludeFromRecents="true"
             android:exported="false"
-            android:theme="@style/Theme.ThorRomButler.ReceiveDialog" />
+            android:theme="@style/Theme.ThorRomButler" />
 
         <service
             android:name=".extraction.ExtractionService"
