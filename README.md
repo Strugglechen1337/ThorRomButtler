@@ -65,7 +65,8 @@ läuft aber auf jedem Android-Smartphone ab Android 13.
   (Einstellungen → „Empfang starten", einmalige Sitzungsadresse am PC öffnen,
   Dateien reinziehen). Uploads werden erst nach vollständigem Schreiben
   sichtbar; die Sitzung endet automatisch nach 30 Minuten. Auch als
-  Schnelleinstellungs-Kachel in der Statusleiste verfügbar.
+  Schnelleinstellungs-Kachel verfügbar: Ein Tipp zeigt die vollständige Adresse,
+  bietet Kopieren und kann den Empfang wieder beenden.
 - 🔄 **Update-Check & In-App-Download** direkt aus den Einstellungen
 - 📜 **Aktions-Log mit Rückgängig**: jede Bewegung wird protokolliert und
   lässt sich direkt aus dem Log zurücknehmen
@@ -224,7 +225,7 @@ newer.
   the device (Settings → "Start receiving", open the one-time session address,
   drop files). Uploads appear only after the copy completes, and the session
   stops automatically after 30 minutes. Also available as a Quick Settings
-  tile in the notification shade.
+  tile: one tap shows the full address, offers copying, and can stop receiving.
 - 🔄 **Update check & in-app download** directly from Settings
 - 📜 **Action log with undo**: every move is recorded and can be reverted
   right from the log

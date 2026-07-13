@@ -2,6 +2,28 @@
 
 All notable user-facing changes are documented here.
 
+## 1.2.2
+
+### Deutsch
+
+- Die Schnelleinstellungs-Kachel öffnet jetzt eine kompakte Anzeige mit der
+  vollständigen, zufälligen Sitzungsadresse. Das funktioniert auf allen von der
+  App unterstützten Android-Versionen ab Android 13.
+- Die Adresse ist auswählbar und kann kopiert werden; der Empfang lässt sich im
+  selben Fenster beenden. Ein erneuter Tipp auf die aktive Kachel zeigt die
+  Adresse wieder an.
+- Der sechsstellige Sitzungscode steht zusätzlich direkt im sichtbaren
+  Kachelnamen, auch wenn die Android-Oberfläche den Untertitel ausblendet.
+
+### English
+
+- The Quick Settings tile now opens a compact view with the complete random
+  session address on every supported Android version starting with Android 13.
+- The address is selectable and can be copied; receiving can be stopped in the
+  same window. Tapping an active tile again shows the address again.
+- The six-character session code is also included in the visible tile label,
+  even when the Android skin hides tile subtitles.
+
 ## 1.2.1
 
 ### Deutsch

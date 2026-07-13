@@ -43,7 +43,10 @@ Android 17 die einmalige Abfrage für den Zugriff auf das lokale Netzwerk
 erlauben; sie erscheint erst beim Start des LAN-Empfangs. Noch schneller:
 Der LAN-Empfang lässt sich als Schnelleinstellungs-Kachel in die
 Statusleiste legen (Statusleiste ausklappen → Stift → „LAN-Empfang"
-hinzufügen). Alternativ kannst du Dateien aus anderen Apps per
+hinzufügen). Ein Tipp startet den Empfang und zeigt die vollständige Adresse in
+einem kleinen Fenster; dort kannst du sie kopieren oder den Empfang beenden.
+Der kurze Sitzungscode steht zusätzlich im Kachelnamen. Alternativ kannst du
+Dateien aus anderen Apps per
 „Teilen → Thor ROM Butler" schicken.
 
 ### Schritt 3: Scannen
@@ -153,7 +156,10 @@ and receiving stops automatically after 30 minutes. On Android 17, allow the
 one-time local network access prompt; it is shown only when LAN receive is
 started. Even quicker: LAN receive is
 available as a Quick Settings tile (expand the notification shade → pencil
-icon → add "LAN receive"). Alternatively, send files from other apps via
+icon → add "LAN receive"). One tap starts receiving and shows the complete
+address in a small window, where it can be copied or receiving can be stopped.
+The short session code also remains visible in the tile label. Alternatively,
+send files from other apps via
 "Share → Thor ROM Butler".
 
 ### Step 3: Scan

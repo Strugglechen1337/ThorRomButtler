@@ -17,7 +17,7 @@
 
     <!-- What's new (update every release!) -->
     <string name="whatsnew_title">New in version %s</string>
-    <string name="whatsnew_body">• Fixed LAN receive on Android 17\n• The new network permission is requested only when starting a LAN session\n• Starts from Settings and the Quick Settings tile are both covered\n\nFull details in the changelog on GitHub.</string>
+    <string name="whatsnew_body">• The LAN tile now shows the full session address in its own window\n• The short random code remains visible in the tile label\n• Copy the address or stop receiving directly from the window\n\nFull details in the changelog on GitHub.</string>
 
     <!-- Setup screen -->
     <string name="setup_title">Setup</string>
@@ -240,6 +240,10 @@
     <string name="receive_count">%d file(s) received</string>
     <string name="receive_failed">Start failed – is the device on Wi-Fi and the download folder set?</string>
     <string name="receive_permission_denied">Local network access is required only while LAN receive is active.</string>
+    <string name="receive_tile_active">LAN: %s</string>
+    <string name="receive_tile_address">Open this address on your PC (same Wi-Fi):\n\n%1$s</string>
+    <string name="receive_copy_address">Copy address</string>
+    <string name="receive_address_copied">Address copied</string>
     <string name="notification_channel_receive">LAN receive</string>
     <string name="notification_receive_title">Receive mode active</string>
     <string name="notification_receive_text_count">%1$s · %2$d received</string>
