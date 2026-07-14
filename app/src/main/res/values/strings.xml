@@ -113,6 +113,10 @@
         <item quantity="one">Sort in 1 ROM</item>
         <item quantity="other">Sort in %d ROMs</item>
     </plurals>
+    <plurals name="review_moved_success">
+        <item quantity="one">1 ROM sorted in!</item>
+        <item quantity="other">%d ROMs sorted in!</item>
+    </plurals>
     <plurals name="review_retry_failed_button">
         <item quantity="one">Retry failed ROM</item>
         <item quantity="other">Retry %d failed ROMs</item>

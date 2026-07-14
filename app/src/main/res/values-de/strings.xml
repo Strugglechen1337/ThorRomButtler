@@ -112,6 +112,10 @@
         <item quantity="one">1 ROM einsortieren</item>
         <item quantity="other">%d ROMs einsortieren</item>
     </plurals>
+    <plurals name="review_moved_success">
+        <item quantity="one">1 ROM einsortiert!</item>
+        <item quantity="other">%d ROMs einsortiert!</item>
+    </plurals>
     <plurals name="review_retry_failed_button">
         <item quantity="one">Fehlgeschlagene ROM erneut versuchen</item>
         <item quantity="other">%d fehlgeschlagene ROMs erneut versuchen</item>

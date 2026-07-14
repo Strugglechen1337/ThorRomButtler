@@ -50,10 +50,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.thor.rombutler.R
@@ -118,17 +120,24 @@ fun ReviewScreen(
     val moveFailureText = state.moveSummary?.takeIf { it.failed > 0 }?.let { summary ->
         state.lastFailureMessage ?: stringResource(R.string.review_move_failed_many, summary.failed)
     }
-    // Successful runs go to the log. Failed items stay on review for retry.
+    // Successful runs celebrate briefly, then go to the log. Failed
+    // items stay on review for retry.
+    var celebrating by remember { mutableStateOf<Int?>(null) }
     LaunchedEffect(state.moveSummary, moveFailureText) {
         val summary = state.moveSummary
         if (summary != null && summary.failed == 0) {
             viewModel.consumeMoveSummary()
+            if (summary.moved > 0) {
+                celebrating = summary.moved
+                kotlinx.coroutines.delay(1300)
+            }
             onMoved()
         } else if (summary != null) {
             snackbarHostState.showSnackbar(moveFailureText.orEmpty())
             viewModel.consumeMoveSummary()
         }
     }
+    celebrating?.let { moved -> SuccessCelebration(moved) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -596,4 +605,59 @@ private fun usableSpaceForPath(path: String): Long? {
         file = file.parentFile
     }
     return file?.usableSpace?.takeIf { it > 0L }
+}
+
+/**
+ * One-shot success moment after a clean sorting run: the bolt pops in
+ * with a bouncy spring inside a gold-glowing badge, then the screen
+ * moves on to the log. Rendered as a dialog so no layout changes.
+ */
+@Composable
+private fun SuccessCelebration(movedCount: Int) {
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = {},
+        properties = androidx.compose.ui.window.DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false,
+        ),
+    ) {
+        var shown by remember { mutableStateOf(false) }
+        LaunchedEffect(Unit) { shown = true }
+        val scale by androidx.compose.animation.core.animateFloatAsState(
+            targetValue = if (shown) 1f else 0.3f,
+            animationSpec = androidx.compose.animation.core.spring(
+                dampingRatio = androidx.compose.animation.core.Spring.DampingRatioMediumBouncy,
+                stiffness = androidx.compose.animation.core.Spring.StiffnessLow,
+            ),
+            label = "celebrateScale",
+        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            },
+        ) {
+            Surface(
+                shape = androidx.compose.foundation.shape.CircleShape,
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                modifier = Modifier
+                    .size(128.dp)
+                    .goldGlow(elevation = 12.dp),
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(text = "⚡", fontSize = 56.sp)
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+            Text(
+                text = pluralStringResource(R.plurals.review_moved_success, movedCount, movedCount),
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+        }
+    }
 }

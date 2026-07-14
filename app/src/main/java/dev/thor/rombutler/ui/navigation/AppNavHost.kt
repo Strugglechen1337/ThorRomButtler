@@ -1,10 +1,14 @@
 package dev.thor.rombutler.ui.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.VisibilityThreshold
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.IntOffset
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -28,11 +32,13 @@ fun AppNavHost(
     NavHost(
         navController = navController,
         startDestination = startDestination,
-        // Fluid slide+fade transitions between the flow's screens
+        // Springy slide+fade: screens glide in with a gentle settle
+        // instead of a linear tween — subtle, but it makes navigation
+        // feel physical rather than mechanical.
         enterTransition = {
             slideIntoContainer(
                 towards = AnimatedContentTransitionScope.SlideDirection.Start,
-                animationSpec = tween(NAV_ANIM_MILLIS),
+                animationSpec = navSpring(),
             ) + fadeIn(tween(NAV_ANIM_MILLIS))
         },
         exitTransition = {
@@ -44,7 +50,7 @@ fun AppNavHost(
         popExitTransition = {
             slideOutOfContainer(
                 towards = AnimatedContentTransitionScope.SlideDirection.End,
-                animationSpec = tween(NAV_ANIM_MILLIS),
+                animationSpec = navSpring(),
             ) + fadeOut(tween(NAV_ANIM_MILLIS))
         },
     ) {
@@ -91,3 +97,9 @@ fun AppNavHost(
 }
 
 private const val NAV_ANIM_MILLIS = 320
+
+private fun navSpring() = spring(
+    dampingRatio = 0.85f,
+    stiffness = Spring.StiffnessMediumLow,
+    visibilityThreshold = IntOffset.VisibilityThreshold,
+)
