@@ -101,6 +101,7 @@ class SettingsViewModel @Inject constructor(
     private val reviewSession: ReviewSession,
     private val receiveManager: dev.thor.rombutler.receive.ReceiveManager,
     private val backupManager: dev.thor.rombutler.backup.BackupManager,
+    private val biosSorter: dev.thor.rombutler.data.files.BiosSorter,
     private val diagnosticReportBuilder: DiagnosticReportBuilder,
     val registry: SystemRegistry,
 ) : ViewModel() {
@@ -233,7 +234,33 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun setBiosFolderPath(path: String?) {
-        viewModelScope.launch { settingsRepository.setBiosFolderPath(path) }
+        viewModelScope.launch {
+            settingsRepository.setBiosFolderPath(path)
+            refreshBiosSuggestion()
+        }
+    }
+
+    /** Auto-detected BIOS folder proposal (null = configured or no idea). */
+    private val _biosSuggestion =
+        MutableStateFlow<dev.thor.rombutler.data.files.BiosFolderSuggestion?>(null)
+    val biosSuggestion: StateFlow<dev.thor.rombutler.data.files.BiosFolderSuggestion?> =
+        _biosSuggestion.asStateFlow()
+
+    init {
+        refreshBiosSuggestion()
+    }
+
+    private fun refreshBiosSuggestion() {
+        viewModelScope.launch {
+            _biosSuggestion.value = runCatching { biosSorter.suggestFolder() }.getOrNull()
+        }
+    }
+
+    fun applyBiosSuggestion(suggestion: dev.thor.rombutler.data.files.BiosFolderSuggestion) {
+        viewModelScope.launch {
+            biosSorter.applySuggestion(suggestion)
+            refreshBiosSuggestion()
+        }
     }
 
     fun setTrashInsteadOfDelete(enabled: Boolean) {

@@ -2,6 +2,29 @@
 
 All notable user-facing changes are documented here.
 
+## 1.7.1
+
+### Deutsch
+
+- Der BIOS-Ordner schlägt sich jetzt selbst vor: Die App durchsucht die
+  üblichen Orte (BIOS/-Ordner auf allen Speichern, RetroArch/system,
+  bios/ neben dem ROM-Ordner) und bevorzugt Ordner, die bereits bekannte
+  BIOS-Dateien enthalten. Ein Tipp auf „Übernehmen" genügt; existiert noch
+  nichts, wird ein BIOS-Ordner neben dem ROM-Ordner angelegt.
+- Core-Konventionen automatisch: Dreamcast-BIOS (dc_boot/dc_flash/naomi)
+  landet ab jetzt im Unterordner dc/, wie Flycast es erwartet.
+
+### English
+
+- The BIOS folder now suggests itself: the app checks the usual places
+  (BIOS/ folders on all volumes, RetroArch/system, bios/ next to the ROM
+  folder) and prefers folders that already contain known BIOS files. One
+  tap on "Apply" is enough; if nothing exists yet, a BIOS folder is
+  created next to the ROM folder.
+- Core conventions handled automatically: Dreamcast BIOS
+  (dc_boot/dc_flash/naomi) now lands in the dc/ subfolder as expected by
+  Flycast.
+
 ## 1.7.0
 
 ### Deutsch

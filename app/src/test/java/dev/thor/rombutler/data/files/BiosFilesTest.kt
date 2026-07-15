@@ -48,6 +48,60 @@ class BiosFilesTest {
     }
 
     @Test
+    fun `dreamcast bios lands in the dc subfolder`() {
+        val root = tempDir.newFolder("downloads")
+        File(root, "dc_boot.bin").writeText("dc")
+        File(root, "scph1001.bin").writeText("ps1")
+        val target = tempDir.newFolder("bios")
+
+        val result = BiosFiles.moveAll(
+            listOf(File(root, "dc_boot.bin"), File(root, "scph1001.bin")),
+            target,
+        )
+
+        assertThat(result.failed).isEmpty()
+        assertThat(File(target, "dc/dc_boot.bin").exists()).isTrue()
+        assertThat(File(target, "scph1001.bin").exists()).isTrue()
+    }
+
+    @Test
+    fun `suggestion prefers folders that already contain bios files`() {
+        val emptyBios = tempDir.newFolder("sd", "BIOS")
+        val stash = tempDir.newFolder("internal", "RetroArch", "system")
+        File(stash, "gba_bios.bin").writeText("x")
+
+        val suggestion = BiosFiles.suggestFolder(
+            candidates = listOf(emptyBios, stash),
+            isBios = detector::isBios,
+            fallback = null,
+        )
+
+        assertThat(suggestion?.path).isEqualTo(stash.absolutePath)
+        assertThat(suggestion?.containsBios).isTrue()
+    }
+
+    @Test
+    fun `suggestion falls back to existing folder then to create proposal`() {
+        val emptyBios = tempDir.newFolder("sd2", "BIOS")
+
+        val existing = BiosFiles.suggestFolder(
+            candidates = listOf(File(tempDir.root, "missing"), emptyBios),
+            isBios = detector::isBios,
+            fallback = null,
+        )
+        assertThat(existing?.path).isEqualTo(emptyBios.absolutePath)
+        assertThat(existing?.exists).isTrue()
+        assertThat(existing?.containsBios).isFalse()
+
+        val create = BiosFiles.suggestFolder(
+            candidates = listOf(File(tempDir.root, "missing")),
+            isBios = detector::isBios,
+            fallback = File(tempDir.root, "new/BIOS"),
+        )
+        assertThat(create?.exists).isFalse()
+    }
+
+    @Test
     fun `never overwrites an existing file in the bios folder`() {
         val root = tempDir.newFolder("downloads")
         File(root, "gba_bios.bin").writeText("new")

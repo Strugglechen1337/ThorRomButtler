@@ -82,6 +82,7 @@ fun SettingsScreen(
     val receiveState by viewModel.receiveState.collectAsStateWithLifecycle()
     val romBackupState by viewModel.romBackupState.collectAsStateWithLifecycle()
     val backupManifest by viewModel.backupManifest.collectAsStateWithLifecycle()
+    val biosSuggestion by viewModel.biosSuggestion.collectAsStateWithLifecycle()
     val registryState by viewModel.registryState.collectAsStateWithLifecycle()
     val systemPackResult by viewModel.systemPackResult.collectAsStateWithLifecycle()
     val systemPackImportPreview by viewModel.systemPackImportPreview.collectAsStateWithLifecycle()
@@ -271,6 +272,42 @@ fun SettingsScreen(
                                 contentDescription = stringResource(R.string.settings_sources_remove),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+                        }
+                    }
+                }
+                val suggestion = biosSuggestion
+                if (settings.biosFolderPath == null && suggestion != null) {
+                    Spacer(Modifier.size(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(
+                                    R.string.settings_bios_suggestion,
+                                    suggestion.path,
+                                ),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                maxLines = 2,
+                            )
+                            Text(
+                                text = stringResource(
+                                    when {
+                                        suggestion.containsBios ->
+                                            R.string.settings_bios_suggestion_found
+
+                                        suggestion.exists ->
+                                            R.string.settings_bios_suggestion_existing
+
+                                        else -> R.string.settings_bios_suggestion_create
+                                    },
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Button(onClick = { viewModel.applyBiosSuggestion(suggestion) }) {
+                            Text(stringResource(R.string.settings_bios_suggestion_apply))
                         }
                     }
                 }

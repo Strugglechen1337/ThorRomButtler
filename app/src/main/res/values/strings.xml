@@ -17,7 +17,7 @@
 
     <!-- What's new (update every release!) -->
     <string name="whatsnew_title">New in version %s</string>
-    <string name="whatsnew_body">• BIOS sorting: detected BIOS files get their own card and move to your BIOS folder with one tap (undoable)\n• New optional BIOS folder in Settings\n\nFull details in the changelog on GitHub.</string>
+    <string name="whatsnew_body">• The BIOS folder now suggests itself: known locations are detected, folders that already contain BIOS files are preferred\n• Dreamcast BIOS automatically lands in the dc/ subfolder (Flycast convention)\n\nFull details in the changelog on GitHub.</string>
 
     <!-- Setup screen -->
     <string name="setup_title">Setup</string>
@@ -63,6 +63,11 @@
     <string name="scan_bios_no_folder">Set a BIOS folder in Settings to sort these in.</string>
     <string name="settings_bios_title">BIOS folder</string>
     <string name="settings_bios_hint">Optional: BIOS/firmware files found during scans can be moved here with one tap (e.g. your emulator\'s system folder).</string>
+    <string name="settings_bios_suggestion">Suggestion: %s</string>
+    <string name="settings_bios_suggestion_found">Found — already contains BIOS files</string>
+    <string name="settings_bios_suggestion_existing">Existing folder</string>
+    <string name="settings_bios_suggestion_create">Will be created when applied</string>
+    <string name="settings_bios_suggestion_apply">Apply</string>
 
     <!-- ROM patches (IPS/UPS/BPS) -->
     <string name="scan_patch_title">ROM patches (%d)</string>
